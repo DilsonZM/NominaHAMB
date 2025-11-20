@@ -250,20 +250,20 @@ const App: React.FC = () => {
       <nav className="fixed w-full z-50 top-0 pt-4 px-4 pointer-events-none">
         <div className="max-w-[1600px] mx-auto flex justify-between items-start pointer-events-auto">
            {/* Logo Area */}
-           <div className="glass-panel px-4 py-2 rounded-full flex items-center gap-2 transition-all hover:bg-white/10 cursor-default">
+           <div className="glass-panel px-4 py-2 rounded-full flex items-center gap-2 transition-all hover:bg-white/40 dark:hover:bg-white/10 cursor-default">
               <div className="bg-brand-500 rounded-full p-1.5 text-white">
                 <CalculatorIcon />
               </div>
-              <span className="font-bold text-sm tracking-tight text-white hidden sm:block">
-                Nómina<span className="text-brand-400">AI</span>
+              <span className="font-bold text-sm tracking-tight text-slate-800 dark:text-white hidden sm:block">
+                Nómina<span className="text-brand-500 dark:text-brand-400">AI</span>
               </span>
            </div>
 
            {/* Dynamic Island Bubble - Net Salary */}
-           <div className="glass-panel rounded-full px-6 py-2.5 flex items-center gap-4 shadow-neon animate-float border-brand-500/20">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-brand-400 hidden sm:block">Neto Estimado</span>
-              <div className="h-4 w-[1px] bg-white/10 hidden sm:block"></div>
-              <span className="text-lg font-bold text-white font-mono tracking-tight">
+           <div className="glass-panel rounded-full px-6 py-2.5 flex items-center gap-4 shadow-soft-light dark:shadow-neon animate-float border-brand-200 dark:border-brand-500/20">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-brand-600 dark:text-brand-400 hidden sm:block">Neto Estimado</span>
+              <div className="h-4 w-[1px] bg-slate-300 dark:bg-white/10 hidden sm:block"></div>
+              <span className="text-lg font-bold text-slate-900 dark:text-white font-mono tracking-tight">
                 {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(results.netIncome)}
               </span>
               <div className="w-2 h-2 bg-brand-500 rounded-full animate-pulse"></div>
@@ -272,7 +272,7 @@ const App: React.FC = () => {
            {/* Theme Toggle */}
            <button 
              onClick={() => setDarkMode(!darkMode)}
-             className="glass-panel p-2.5 rounded-full hover:bg-white/10 transition-all text-slate-400 hover:text-white"
+             className="glass-panel p-2.5 rounded-full hover:bg-white/40 dark:hover:bg-white/10 transition-all text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-white"
            >
              {darkMode ? <SunIcon /> : <MoonIcon />}
            </button>
@@ -286,10 +286,10 @@ const App: React.FC = () => {
           
           {/* Header Text */}
           <div className="mb-8 ml-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-2">
-              Calculadora <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-accent-purple">Inteligente</span>
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">
+              Calculadora <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-accent-purple">Inteligente</span>
             </h1>
-            <p className="text-slate-400 text-sm max-w-lg font-light">
+            <p className="text-slate-500 dark:text-slate-400 text-sm max-w-lg font-light">
               Configura tus ingresos, deducciones y novedades. El sistema ajustará automáticamente los cálculos basándose en la normativa vigente.
             </p>
           </div>
@@ -297,11 +297,11 @@ const App: React.FC = () => {
           {/* Main Config Card */}
           <div className="glass-panel rounded-3xl p-6 lg:p-8 relative overflow-hidden">
             <div className="flex items-center gap-3 mb-8">
-              <div className="p-2 bg-brand-500/10 rounded-lg text-brand-400 border border-brand-500/20">
+              <div className="p-2 bg-brand-500/10 rounded-lg text-brand-600 dark:text-brand-400 border border-brand-500/20">
                 <WalletIcon />
               </div>
               <div>
-                <h2 className="text-base font-bold text-white">Ingresos Base</h2>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">Ingresos Base</h2>
                 <p className="text-xs text-slate-500">Salario y Bonificaciones</p>
               </div>
             </div>
@@ -338,24 +338,24 @@ const App: React.FC = () => {
           <div className="glass-panel rounded-3xl overflow-hidden transition-all duration-500">
             <button 
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="w-full p-6 flex items-center justify-between hover:bg-white/5 transition-colors group"
+              className="w-full p-6 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group"
             >
                <div className="flex items-center gap-4">
                  <div className="p-2.5 bg-accent-purple/10 text-accent-purple rounded-xl border border-accent-purple/20 group-hover:scale-105 transition-transform">
                    <CalendarIcon />
                  </div>
                  <div className="text-left">
-                   <h3 className="font-bold text-white">Novedades y Calendario</h3>
+                   <h3 className="font-bold text-slate-900 dark:text-white">Novedades y Calendario</h3>
                    <p className="text-xs text-slate-500">Vacaciones, Incapacidades, Extras</p>
                  </div>
                </div>
-               <div className={`transform transition-transform duration-300 ${showAdvanced ? 'rotate-180' : ''} text-slate-500`}>
+               <div className={`transform transition-transform duration-300 ${showAdvanced ? 'rotate-180' : ''} text-slate-400`}>
                  <ChevronDownIcon />
                </div>
             </button>
             
             {showAdvanced && (
-              <div className="p-6 lg:p-8 border-t border-white/5 space-y-8 animate-slide-up">
+              <div className="p-6 lg:p-8 border-t border-slate-200 dark:border-white/5 space-y-8 animate-slide-up">
                 
                 {/* Calendar Grid */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
@@ -374,16 +374,16 @@ const App: React.FC = () => {
                       <label className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-4 block">Resumen de Días (Manual)</label>
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { label: 'Vacaciones', key: 'vacation', color: 'text-emerald-400' },
-                          { label: 'Incapacidad', key: 'disability', color: 'text-amber-400' },
-                          { label: 'Lic. Remun.', key: 'paidLeave', color: 'text-blue-400' },
-                          { label: 'No Remun.', key: 'unpaidLeave', color: 'text-rose-400' },
+                          { label: 'Vacaciones', key: 'vacation', color: 'text-emerald-500 dark:text-emerald-400' },
+                          { label: 'Incapacidad', key: 'disability', color: 'text-amber-500 dark:text-amber-400' },
+                          { label: 'Lic. Remun.', key: 'paidLeave', color: 'text-brand-500 dark:text-blue-400' },
+                          { label: 'No Remun.', key: 'unpaidLeave', color: 'text-rose-500 dark:text-rose-400' },
                         ].map((item) => (
-                           <div key={item.key} className="bg-white/5 p-3 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+                           <div key={item.key} className="bg-white/50 dark:bg-white/5 p-3 rounded-xl border border-slate-200 dark:border-white/5 hover:border-brand-300 dark:hover:border-white/10 transition-colors">
                               <span className={`text-[10px] uppercase tracking-wider font-bold block mb-1 ${item.color}`}>{item.label}</span>
                               <input 
                                 type="number" 
-                                className="w-full bg-transparent border-none p-0 text-xl font-bold text-white focus:ring-0"
+                                className="w-full bg-transparent border-none p-0 text-xl font-bold text-slate-800 dark:text-white focus:ring-0"
                                 value={(input.days as any)[item.key]}
                                 onChange={(e) => updateDays(item.key as any, parseFloat(e.target.value)||0)}
                               />
@@ -392,9 +392,9 @@ const App: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div className="bg-brand-500/10 p-4 rounded-xl border border-brand-500/20">
-                      <h5 className="text-brand-400 font-bold text-xs uppercase mb-1">Sincronización Inteligente</h5>
-                      <p className="text-xs text-slate-400 leading-relaxed">
+                    <div className="bg-brand-50 dark:bg-brand-500/10 p-4 rounded-xl border border-brand-200 dark:border-brand-500/20">
+                      <h5 className="text-brand-600 dark:text-brand-400 font-bold text-xs uppercase mb-1">Sincronización Inteligente</h5>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                         Al marcar días en el calendario, los contadores manuales se actualizan. Si editas los números manualmente, el cálculo monetario obedecerá tu entrada.
                       </p>
                     </div>
@@ -402,7 +402,7 @@ const App: React.FC = () => {
                 </div>
 
                 {/* Extras Inputs */}
-                <div className="pt-6 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                <div className="pt-6 border-t border-slate-200 dark:border-white/5 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                    <div className="col-span-full">
                       <ToggleSwitch 
                         label="Horas Extras y Recargos" 
@@ -459,11 +459,11 @@ const App: React.FC = () => {
           </button>
 
           {aiStatus === AnalysisStatus.SUCCESS && (
-            <div className="p-6 rounded-3xl bg-gradient-to-br from-accent-purple/10 to-brand-500/10 border border-accent-purple/20 animate-fade-in">
+            <div className="p-6 rounded-3xl bg-gradient-to-br from-white to-brand-50 dark:from-accent-purple/10 dark:to-brand-500/10 border border-brand-200 dark:border-accent-purple/20 animate-fade-in">
               <h3 className="text-accent-purple font-bold flex items-center gap-2 mb-4 text-lg">
                 <SparklesIcon /> Análisis Financiero
               </h3>
-              <div className="prose prose-invert prose-sm max-w-none text-slate-300 font-light leading-relaxed">
+              <div className="prose prose-invert prose-sm max-w-none text-slate-600 dark:text-slate-300 font-light leading-relaxed">
                 <p className="whitespace-pre-line">{aiAnalysis}</p>
               </div>
             </div>
@@ -473,37 +473,37 @@ const App: React.FC = () => {
         {/* Right Column: Digital Receipt */}
         <div className="lg:col-span-5 animate-slide-up" style={{ animationDelay: '0.1s' }}>
            <div className="sticky top-32">
-             <div className="glass-panel rounded-3xl shadow-2xl relative overflow-hidden group">
+             <div className="glass-panel rounded-3xl shadow-soft-light dark:shadow-2xl relative overflow-hidden group">
                 
                 {/* Receipt Header */}
-                <div className="bg-[#12141c]/80 p-8 border-b border-white/5 relative overflow-hidden">
+                <div className="bg-white/80 dark:bg-[#12141c]/80 p-8 border-b border-slate-200 dark:border-white/5 relative overflow-hidden transition-colors">
                    {/* Top Shine */}
                    <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-brand-400 to-transparent opacity-50"></div>
                    
                    <div className="flex justify-between items-center mb-4">
                      <div className="flex items-center gap-2">
                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                       <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">En línea</span>
+                       <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">En línea</span>
                      </div>
-                     <span className="text-[10px] font-mono text-slate-500 bg-white/5 px-2 py-1 rounded">
+                     <span className="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-white/5 px-2 py-1 rounded border border-slate-200 dark:border-transparent">
                         REC-{new Date().getTime().toString().slice(-6)}
                      </span>
                    </div>
                    
                    <div className="flex flex-col">
-                     <span className="text-sm text-slate-400 font-medium mb-1">Total Neto a Pagar</span>
-                     <h2 className="text-5xl font-bold text-white tracking-tight font-sans">
+                     <span className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">Total Neto a Pagar</span>
+                     <h2 className="text-5xl font-bold text-slate-900 dark:text-white tracking-tight font-sans transition-colors">
                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(results.netIncome)}
                      </h2>
                    </div>
                 </div>
                 
                 {/* Body */}
-                <div className="p-8 space-y-8 bg-[#0B0F17]/40">
+                <div className="p-8 space-y-8 bg-slate-50/50 dark:bg-[#0B0F17]/40">
                    
                    <div>
                       <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-4 tracking-widest flex items-center gap-2">
-                        <span className="w-4 h-[1px] bg-slate-600"></span>
+                        <span className="w-4 h-[1px] bg-slate-300 dark:bg-slate-600"></span>
                         Devengados
                       </h4>
                       <div className="space-y-1">
@@ -543,16 +543,16 @@ const App: React.FC = () => {
                       </div>
                    </div>
 
-                   <div className="py-3 border-y border-dashed border-white/10 flex justify-between items-center">
-                       <span className="text-xs font-bold text-slate-400 uppercase">Total Ingresos</span>
-                       <span className="font-mono font-bold text-white">
+                   <div className="py-3 border-y border-dashed border-slate-300 dark:border-white/10 flex justify-between items-center">
+                       <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Total Ingresos</span>
+                       <span className="font-mono font-bold text-slate-700 dark:text-white">
                          {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(results.grossIncome)}
                        </span>
                    </div>
 
                    <div>
                       <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-4 tracking-widest flex items-center gap-2">
-                         <span className="w-4 h-[1px] bg-slate-600"></span>
+                         <span className="w-4 h-[1px] bg-slate-300 dark:bg-slate-600"></span>
                          Deducciones
                       </h4>
                       <div className="space-y-1">
@@ -562,9 +562,9 @@ const App: React.FC = () => {
                       </div>
                    </div>
                    
-                   <div className="bg-rose-500/10 rounded-xl p-4 flex justify-between items-center border border-rose-500/20">
-                      <span className="text-xs font-bold text-rose-400">Total Deducciones</span>
-                      <span className="font-mono font-bold text-rose-400">
+                   <div className="bg-rose-50 dark:bg-rose-500/10 rounded-xl p-4 flex justify-between items-center border border-rose-200 dark:border-rose-500/20">
+                      <span className="text-xs font-bold text-rose-500 dark:text-rose-400">Total Deducciones</span>
+                      <span className="font-mono font-bold text-rose-600 dark:text-rose-400">
                         - {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(results.totalDeductions)}
                       </span>
                    </div>
@@ -572,8 +572,8 @@ const App: React.FC = () => {
                 </div>
                 
                 {/* Footer */}
-                <div className="bg-[#0B0F17]/60 p-4 text-center border-t border-white/5">
-                   <p className="text-[10px] text-slate-600 font-mono">Powered by Google Gemini 2.5</p>
+                <div className="bg-slate-50 dark:bg-[#0B0F17]/60 p-4 text-center border-t border-slate-200 dark:border-white/5">
+                   <p className="text-[10px] text-slate-400 dark:text-slate-600 font-mono">Powered by Google Gemini 2.5</p>
                 </div>
              </div>
            </div>

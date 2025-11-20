@@ -20,7 +20,7 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
   return (
     <div className="group">
       <div className="flex justify-between mb-2">
-        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 group-focus-within:text-brand-400 transition-colors">
+        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 group-focus-within:text-brand-500 transition-colors">
           {label}
         </label>
         {daysValue !== undefined && (
@@ -34,7 +34,7 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
         {/* Input de Moneda */}
         <div className="relative flex-1">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-            <span className="text-slate-500 font-medium">$</span>
+            <span className="text-slate-400 dark:text-slate-500 font-medium">$</span>
           </div>
           <input
             type="number"
@@ -42,10 +42,10 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
             disabled={disabled}
             value={value || ''}
             onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-            className={`block w-full rounded-xl border-0 py-3 pl-8 text-white ring-1 ring-inset placeholder:text-slate-600 focus:ring-2 focus:ring-inset focus:ring-brand-500 sm:text-sm sm:leading-6 font-bold transition-all shadow-lg
+            className={`block w-full rounded-xl border-0 py-3 pl-8 ring-1 ring-inset transition-all shadow-sm sm:text-sm sm:leading-6 font-bold
               ${disabled 
-                ? 'bg-white/5 opacity-50 cursor-not-allowed ring-white/5' 
-                : 'bg-[#0B0F17]/50 ring-white/10 hover:bg-[#0B0F17] hover:ring-brand-500/30'
+                ? 'bg-slate-50 dark:bg-white/5 text-slate-400 dark:text-slate-500 cursor-not-allowed ring-slate-200 dark:ring-white/5' 
+                : 'bg-white dark:bg-[#0B0F17]/50 text-slate-900 dark:text-white ring-slate-200 dark:ring-white/10 hover:ring-brand-400 focus:ring-2 focus:ring-inset focus:ring-brand-500'
               }
             `}
             placeholder="0"
@@ -61,7 +61,11 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
               max="30"
               value={Math.round(daysValue * 10) / 10} // Round to 1 decimal
               onChange={(e) => onDaysChange(parseFloat(e.target.value) || 0)}
-              className="block w-full rounded-xl border-0 py-3 text-center text-white ring-1 ring-inset ring-white/10 placeholder:text-slate-600 focus:ring-2 focus:ring-inset focus:ring-brand-500 sm:text-sm sm:leading-6 font-bold bg-[#0B0F17]/50 hover:bg-[#0B0F17] transition-colors shadow-lg"
+              className="block w-full rounded-xl border-0 py-3 text-center ring-1 ring-inset transition-colors shadow-sm sm:text-sm sm:leading-6 font-bold
+                bg-white dark:bg-[#0B0F17]/50 
+                text-slate-900 dark:text-white
+                ring-slate-200 dark:ring-white/10 
+                hover:ring-brand-400 focus:ring-2 focus:ring-inset focus:ring-brand-500"
             />
           </div>
         )}
