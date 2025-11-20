@@ -6,30 +6,39 @@ interface ResultCardProps {
   amount: number;
   type: 'info' | 'income' | 'deduction' | 'net' | 'subtotal' | 'warning';
   icon?: React.ReactNode;
+  days?: number; // Nuevo prop para mostrar los días
 }
 
-export const ResultCard: React.FC<ResultCardProps> = ({ title, subtitle, amount, type, icon }) => {
-  const getStyles = () => {
+export const ResultCard: React.FC<ResultCardProps> = ({ title, subtitle, amount, type, icon, days }) => {
+  
+  // Estilos dinámicos basados en el tipo y el tema (dark/light classes)
+  const getContainerStyles = () => {
     switch (type) {
       case 'income':
-        // Estilo azul oscuro para ingresos
-        return 'bg-[#1e293b] border border-slate-700 text-white';
+        return 'bg-white dark:bg-[#151B28] border-l-4 border-l-blue-500 dark:border-l-blue-500 border-y border-r border-slate-200 dark:border-slate-800';
       case 'subtotal':
-         // Estilo específico para TOTAL INGRESOS
-        return 'bg-[#1e293b] border border-brand-900 shadow-[0_0_15px_rgba(59,130,246,0.1)] text-white';
+        return 'bg-slate-50 dark:bg-[#1e293b] border border-blue-200 dark:border-blue-900/50 shadow-sm';
       case 'deduction':
-        // Estilo rojizo oscuro para deducciones
-        return 'bg-[#2D1A1A] border border-rose-900/30 text-rose-200';
+        return 'bg-white dark:bg-[#151B28] border-l-4 border-l-rose-500 dark:border-l-rose-500 border-y border-r border-slate-200 dark:border-slate-800';
       case 'net':
-        // Estilo verde destacado para el neto
-        return 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 border-none';
+        return 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30 border-none';
       case 'warning':
-        // Estilo ámbar para incapacidades
-        return 'bg-amber-950/30 border border-amber-900/50 text-amber-100';
+        return 'bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50';
       default:
-        return 'bg-[#1e293b] border border-slate-700 text-slate-300';
+        return 'bg-white dark:bg-[#151B28] border border-slate-200 dark:border-slate-800';
     }
   };
+
+  const getTextColors = () => {
+    if (type === 'net') return { title: 'text-emerald-50', amount: 'text-white', subtitle: 'text-emerald-100' };
+    if (type === 'warning') return { title: 'text-amber-700 dark:text-amber-400', amount: 'text-amber-700 dark:text-amber-400', subtitle: 'text-amber-600/70' };
+    if (type === 'deduction') return { title: 'text-slate-700 dark:text-slate-300', amount: 'text-rose-600 dark:text-rose-400', subtitle: 'text-slate-400' };
+    if (type === 'subtotal') return { title: 'text-slate-800 dark:text-white', amount: 'text-blue-600 dark:text-blue-400', subtitle: 'text-slate-400' };
+    
+    return { title: 'text-slate-700 dark:text-slate-200', amount: 'text-slate-900 dark:text-white', subtitle: 'text-slate-500 dark:text-slate-400' };
+  };
+
+  const colors = getTextColors();
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('es-CO', { 
@@ -40,16 +49,28 @@ export const ResultCard: React.FC<ResultCardProps> = ({ title, subtitle, amount,
   };
 
   return (
-    <div className={`p-4 rounded-xl mb-3 flex items-center justify-between ${getStyles()} transition-all`}>
+    <div className={`p-4 rounded-xl mb-3 flex items-center justify-between transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md ${getContainerStyles()}`}>
       <div className="flex items-center gap-3">
-        {icon && <div className="opacity-80">{icon}</div>}
+        {icon && <div className={`p-2 rounded-lg ${type === 'net' ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-800'} ${type === 'net' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>{icon}</div>}
         <div>
-          <h4 className={`font-bold text-sm ${type === 'net' ? 'text-emerald-50' : ''}`}>{title}</h4>
-          {subtitle && <p className="text-xs opacity-70">{subtitle}</p>}
+          <div className="flex items-center gap-2">
+            <h4 className={`font-bold text-sm ${colors.title}`}>{title}</h4>
+            {/* Badge de días */}
+            {days !== undefined && days > 0 && (
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${
+                type === 'net' 
+                  ? 'bg-white/20 border-white/30 text-white' 
+                  : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
+              }`}>
+                {days} días
+              </span>
+            )}
+          </div>
+          {subtitle && <p className={`text-xs mt-0.5 ${colors.subtitle}`}>{subtitle}</p>}
         </div>
       </div>
       <div className="text-right">
-        <p className={`font-bold text-lg tracking-wide ${type === 'deduction' ? 'text-rose-400' : ''} ${type === 'subtotal' ? 'text-blue-400' : ''} ${type === 'warning' ? 'text-amber-400' : ''}`}>
+        <p className={`font-bold text-lg tracking-wide ${colors.amount}`}>
           {formatCurrency(amount)}
         </p>
       </div>

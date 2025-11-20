@@ -34,7 +34,16 @@ export interface CalculatedResults {
   healthDeduction: number;  
   pensionDeduction: number; 
   totalDeductions: number;
-  netIncome: number;        
+  netIncome: number; 
+  
+  // Breakdown of days for UI display
+  daysBreakdown: {
+    worked: number;
+    vacation: number;
+    disability: number;
+    paidLeave: number;
+    unpaidLeave: number;
+  }
 }
 
 export enum AnalysisStatus {
