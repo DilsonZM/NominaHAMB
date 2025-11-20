@@ -1,12 +1,19 @@
 export interface PayrollInput {
   baseSalary: number;
-  workedDays?: number;
-  // workedDays se calculará dinámicamente basado en el calendario
   extralegalBonus: number; 
   foodBonus: number;       
   otherRefunds: number;    
   funeralInsurance: number;
   
+  // Contadores de días (Editables manualmente o por calendario)
+  days: {
+    worked: number;       // Días trabajados reales
+    vacation: number;     // Días de vacaciones
+    disability: number;   // Días de incapacidad
+    paidLeave: number;    // Licencias remuneradas
+    unpaidLeave: number;  // No remunerados
+  };
+
   // Configuración de fecha y calendario
   selectedMonth: number; // 0-11
   selectedYear: number;
@@ -26,24 +33,18 @@ export enum DayType {
 }
 
 export interface CalculatedResults {
-  grossSalary: number;      // Salario por días trabajados
+  grossSalary: number;      // Pago por tiempo trabajado
   vacationPay: number;      // Pago por vacaciones
   disabilityPay: number;    // Pago por incapacidad
   paidLeavePay: number;     // Pago por licencias remuneradas
+  
+  bonusPay: number;         // Pago proporcional de bonos (Extralegal + Alimentación)
+
   grossIncome: number;      // Total Devengado
   healthDeduction: number;  
   pensionDeduction: number; 
   totalDeductions: number;
   netIncome: number; 
-  
-  // Breakdown of days for UI display
-  daysBreakdown: {
-    worked: number;
-    vacation: number;
-    disability: number;
-    paidLeave: number;
-    unpaidLeave: number;
-  }
 }
 
 export enum AnalysisStatus {

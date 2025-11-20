@@ -17,7 +17,7 @@ export const analyzeSalaryWithGemini = async (
       
       DATOS DEL EMPLEADO:
       - Salario Base Contratado: ${fmt(input.baseSalary)}
-      - Días trabajados: ${input.workedDays ?? 30}
+      - Días trabajados: ${input.days.worked ?? 30}
       - Ingresos NO salariales (Bonos extralegales/Alimentación): ${fmt(input.extralegalBonus + input.foodBonus)}
       
       RESULTADOS DE LA LIQUIDACIÓN:

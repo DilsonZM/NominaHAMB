@@ -59,7 +59,7 @@ export const PayrollCalendar: React.FC<PayrollCalendarProps> = ({
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const status = dayStatuses[dateStr] || DayType.WORK;
 
-      let bgClass = 'bg-white dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'; 
+      let bgClass = 'bg-white dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10'; 
       
       if (status === DayType.VACATION) {
         bgClass = 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20 border-emerald-500';
@@ -85,19 +85,19 @@ export const PayrollCalendar: React.FC<PayrollCalendarProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-[#151B28] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+    <div className="bg-white dark:bg-[#0B0F17]/50 border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-inner">
       
       <div className="mb-6">
-        <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-3">Seleccionar Herramienta:</p>
+        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-3">Seleccionar Herramienta:</p>
         <div className="flex flex-wrap gap-2">
           {tools.map((tool) => (
              <button
                key={tool.id}
                onClick={() => setSelectedTool(tool.id)}
-               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 shadow-sm border ${
+               className={`px-3 py-1.5 rounded-lg text-[10px] uppercase font-bold transition-all flex items-center gap-2 shadow-sm border ${
                  selectedTool === tool.id 
                  ? `${tool.color} text-white border-transparent ring-2 ring-offset-2 ring-offset-white dark:ring-offset-[#151B28] ${tool.ring}` 
-                 : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                 : 'bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10'
                }`}
              >
                <div className={`w-2 h-2 rounded-full ${selectedTool === tool.id ? 'bg-white' : tool.color}`}></div>
@@ -107,18 +107,18 @@ export const PayrollCalendar: React.FC<PayrollCalendarProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+      <div className="flex items-center justify-between mb-4 border-t border-slate-100 dark:border-white/10 pt-4">
         <div>
           <h3 className="text-slate-900 dark:text-white font-bold text-sm">Calendario</h3>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={handlePrevMonth} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500 dark:text-slate-400 transition-colors">
+          <button onClick={handlePrevMonth} className="p-1 hover:bg-slate-100 dark:hover:bg-white/10 rounded text-slate-500 dark:text-slate-400 transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
           <span className="text-sm font-bold text-slate-700 dark:text-slate-200 w-28 text-center select-none">
             {MONTHS[month]} {year}
           </span>
-          <button onClick={handleNextMonth} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500 dark:text-slate-400 transition-colors">
+          <button onClick={handleNextMonth} className="p-1 hover:bg-slate-100 dark:hover:bg-white/10 rounded text-slate-500 dark:text-slate-400 transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>

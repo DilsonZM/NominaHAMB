@@ -4,11 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nómina AI Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         darkMode: 'class',
         theme: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
           extend: {
             colors: {
               brand: {
@@ -21,10 +27,23 @@
                 900: '#1e3a8a',
               },
               dark: {
-                bg: '#0B0F17',      // Fondo muy oscuro
-                card: '#151B28',    // Fondo de tarjeta
-                input: '#FFFFFF',   // Inputs blancos como en la foto
-                border: '#2D3748',
+                bg: '#0B0F17',
+                card: '#151B28',
+                border: '#2A3447'
+              }
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-out',
+              'slide-up': 'slideUp 0.5s ease-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
               }
             }
           }
@@ -42,8 +61,44 @@
   }
 }
 </script>
+<style>
+  /* Mesh Gradient Background - Deep Fintech Style */
+  body {
+    background-color: #0B0F17;
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.08), transparent 25%),
+      radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%);
+    background-attachment: fixed;
+  }
+
+  .glass-panel {
+    background: rgba(21, 27, 40, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .light-mesh-bg {
+    background-color: #f8fafc;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(210, 100%, 96%, 1) 0, transparent 50%), 
+      radial-gradient(at 50% 100%, hsla(220, 100%, 97%, 1) 0, transparent 50%);
+  }
+  
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent; 
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.3); 
+    border-radius: 4px;
+  }
+</style>
 </head>
-  <body class="bg-dark-bg text-slate-100 antialiased selection:bg-brand-500 selection:text-white">
+  <body class="antialiased text-slate-200 selection:bg-brand-500 selection:text-white">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
