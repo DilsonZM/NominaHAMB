@@ -21,35 +21,46 @@ export const ResultCard: React.FC<ResultCardProps> = ({ title, subtitle, amount,
 
   const getTextColor = () => {
     switch(type) {
-      case 'deduction': return 'text-rose-500';
-      case 'warning': return 'text-amber-500';
-      case 'income': return 'text-slate-900 dark:text-white';
-      default: return 'text-slate-700 dark:text-slate-300';
+      case 'deduction': return 'text-rose-400';
+      case 'warning': return 'text-amber-400';
+      case 'income': return 'text-white';
+      case 'info': return 'text-brand-300';
+      default: return 'text-slate-300';
+    }
+  }
+
+  const getBgHover = () => {
+    switch(type) {
+      case 'deduction': return 'hover:bg-rose-500/5';
+      case 'warning': return 'hover:bg-amber-500/5';
+      default: return 'hover:bg-brand-500/5';
     }
   }
 
   return (
-    <div className="flex items-center justify-between py-2 group">
+    <div className={`flex items-center justify-between py-3 px-3 -mx-3 rounded-xl transition-colors ${getBgHover()} group`}>
       <div className="flex items-center gap-3">
-        {icon && <div className="text-slate-400">{icon}</div>}
+        {icon && <div className="text-amber-400">{icon}</div>}
         <div>
           <div className="flex items-center gap-2">
-             <h4 className="font-semibold text-sm text-slate-700 dark:text-slate-200">{title}</h4>
+             <h4 className={`font-medium text-sm ${type === 'info' ? 'text-slate-300' : 'text-slate-200'}`}>{title}</h4>
              {days !== undefined && days > 0 && (
-               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300">
+               <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-white/5 text-slate-400 border border-white/5">
                  {days}d
                </span>
              )}
           </div>
-          {subtitle && <p className="text-[10px] text-slate-400 uppercase tracking-wide mt-0.5">{subtitle}</p>}
+          {subtitle && <p className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">{subtitle}</p>}
         </div>
       </div>
       
-      {/* Dotted Line for Receipt feel */}
-      <div className="flex-1 mx-4 border-b-2 border-dotted border-slate-300 dark:border-white/10 h-1 relative top-1 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block"></div>
+      <div className="flex items-center gap-4 flex-1 justify-end">
+         {/* Dotted Line */}
+         <div className="flex-1 border-b-2 border-dotted border-white/5 h-px opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block"></div>
 
-      <div className={`font-mono font-bold text-sm tracking-tight ${getTextColor()}`}>
-        {type === 'deduction' ? '-' : ''}{formatCurrency(amount)}
+         <div className={`font-mono font-bold text-sm tracking-tight ${getTextColor()}`}>
+            {type === 'deduction' ? '-' : ''}{formatCurrency(amount)}
+         </div>
       </div>
     </div>
   );

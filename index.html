@@ -6,7 +6,7 @@
     <title>Nómina AI Pro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -18,23 +18,30 @@
           extend: {
             colors: {
               brand: {
-                50: '#eff6ff',
-                100: '#dbeafe',
-                400: '#60a5fa',
-                500: '#3b82f6',
-                600: '#2563eb',
-                700: '#1d4ed8',
-                900: '#1e3a8a',
+                50: '#f0f9ff',
+                100: '#e0f2fe',
+                400: '#38bdf8',
+                500: '#0ea5e9', // Sky blue / Cyan base
+                600: '#0284c7',
+                700: '#0369a1',
+                900: '#0c4a6e',
+              },
+              accent: {
+                purple: '#8b5cf6',
+                cyan: '#06b6d4',
+                pink: '#ec4899'
               },
               dark: {
-                bg: '#0B0F17',
-                card: '#151B28',
-                border: '#2A3447'
+                bg: '#05050A',     // Deepest black-blue
+                card: '#0F1219',   // Slightly lighter
+                border: '#1F2937'
               }
             },
             animation: {
-              'fade-in': 'fadeIn 0.5s ease-out',
-              'slide-up': 'slideUp 0.5s ease-out',
+              'fade-in': 'fadeIn 0.6s ease-out',
+              'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'float': 'float 6s ease-in-out infinite',
             },
             keyframes: {
               fadeIn: {
@@ -44,7 +51,15 @@
               slideUp: {
                 '0%': { transform: 'translateY(20px)', opacity: '0' },
                 '100%': { transform: 'translateY(0)', opacity: '1' },
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-10px)' },
               }
+            },
+            boxShadow: {
+              'neon': '0 0 20px rgba(14, 165, 233, 0.15)',
+              'neon-purple': '0 0 20px rgba(139, 92, 246, 0.15)',
             }
           }
         }
@@ -62,27 +77,30 @@
 }
 </script>
 <style>
-  /* Mesh Gradient Background - Deep Fintech Style */
+  /* Deep Space / Tech Background */
   body {
-    background-color: #0B0F17;
+    background-color: #05050A;
     background-image: 
-      radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.08), transparent 25%),
-      radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%);
+      radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.08), transparent 40%),
+      radial-gradient(circle at 90% 50%, rgba(6, 182, 212, 0.08), transparent 40%),
+      radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.05), transparent 40%);
     background-attachment: fixed;
   }
 
+  /* Glass Panels with Tech feel */
   .glass-panel {
-    background: rgba(21, 27, 40, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(15, 18, 25, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
   }
 
   .light-mesh-bg {
-    background-color: #f8fafc;
+    background-color: #f3f4f6;
     background-image: 
-      radial-gradient(at 0% 0%, hsla(210, 100%, 96%, 1) 0, transparent 50%), 
-      radial-gradient(at 50% 100%, hsla(220, 100%, 97%, 1) 0, transparent 50%);
+      radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.1) 0, transparent 50%), 
+      radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.1) 0, transparent 50%);
   }
   
   /* Custom Scrollbar */
@@ -93,12 +111,15 @@
     background: transparent; 
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(156, 163, 175, 0.3); 
+    background: rgba(255, 255, 255, 0.1); 
     border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2); 
   }
 </style>
 </head>
-  <body class="antialiased text-slate-200 selection:bg-brand-500 selection:text-white">
+  <body class="antialiased text-slate-300 selection:bg-brand-500 selection:text-white">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
