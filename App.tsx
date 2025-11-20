@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CurrencyInput } from './components/CurrencyInput';
 import { ResultCard } from './components/ResultCard';
@@ -66,7 +67,8 @@ const App: React.FC = () => {
     vacationPay: 0,
     disabilityPay: 0,
     paidLeavePay: 0,
-    bonusPay: 0,
+    extralegalBonusPay: 0,
+    foodBonusPay: 0,
     grossIncome: 0,
     healthDeduction: 0,
     pensionDeduction: 0,
@@ -124,13 +126,6 @@ const App: React.FC = () => {
       }
     }));
 
-    // If the user is interacting with the calendar, we should probably clear manual overrides
-    // to show the "Real" calculated value. However, if they haven't touched the calendar recently,
-    // we don't want to wipe their manual entry. 
-    // For now, let's only wipe if the calculated days differ significantly or we could just leave it.
-    // Best UX: Let manual override persist until cleared? No, calendar should drive inputs if used.
-    // We will leave manual overrides active if they are set, but the Input placeholders will update.
-    
   }, [input.dayStatuses, input.selectedMonth, input.selectedYear]);
 
   // 2. FINANCIAL CALCULATION LOGIC
@@ -152,19 +147,23 @@ const App: React.FC = () => {
     // Logic: These are usually paid for days WORKED.
     // Since workedDays = 30 - disability - vacation - unpaid, 
     // using input.days.worked AUTOMATICALLY subtracts disability/vacation days.
-    const totalBonusesBase = input.extralegalBonus + input.foodBonus;
-    const dailyBonus = totalBonusesBase / 30;
     
     const calculatedBonusDays = input.days.worked;
     const effectiveBonusDays = manualBonusDays !== null ? manualBonusDays : calculatedBonusDays;
-    const bonusPay = dailyBonus * effectiveBonusDays;
+
+    // Calculate separately
+    const dailyExtralegal = input.extralegalBonus / 30;
+    const extralegalBonusPay = dailyExtralegal * effectiveBonusDays;
+
+    const dailyFood = input.foodBonus / 30;
+    const foodBonusPay = dailyFood * effectiveBonusDays;
 
     // EXTRAS & DEDUCTIONS
     const overtime = input.includeOvertime ? input.overtimeValue : 0;
     const commissions = input.commissions;
     const otherRefunds = input.otherRefunds;
 
-    const grossIncome = salaryPay + vacationPay + disabilityPay + bonusPay + overtime + commissions + otherRefunds;
+    const grossIncome = salaryPay + vacationPay + disabilityPay + extralegalBonusPay + foodBonusPay + overtime + commissions + otherRefunds;
 
     // IBC (Ingreso Base de Cotización)
     // Typically includes Salary + Vacation + Overtime + Commissions (but not non-salary bonuses)
@@ -182,7 +181,8 @@ const App: React.FC = () => {
       vacationPay,
       disabilityPay,
       paidLeavePay: 0,
-      bonusPay,
+      extralegalBonusPay,
+      foodBonusPay,
       grossIncome,
       healthDeduction,
       pensionDeduction,
@@ -519,14 +519,25 @@ const App: React.FC = () => {
                         {results.disabilityPay > 0 && (
                           <ResultCard title="Incapacidades (66%)" amount={results.disabilityPay} type="warning" days={input.days.disability} icon={<AlertIcon/>} />
                         )}
-                        {(results.bonusPay > 0) && (
+                        
+                        {/* Split Bonuses */}
+                        {(results.extralegalBonusPay > 0) && (
                            <ResultCard 
-                              title="Bonos No Salariales" 
-                              amount={results.bonusPay} 
+                              title="Bono Extralegal" 
+                              amount={results.extralegalBonusPay} 
                               type="info"
                               days={manualBonusDays !== null ? manualBonusDays : input.days.worked}
                            />
                         )}
+                        {(results.foodBonusPay > 0) && (
+                           <ResultCard 
+                              title="Aux. Alimentación" 
+                              amount={results.foodBonusPay} 
+                              type="info"
+                              days={manualBonusDays !== null ? manualBonusDays : input.days.worked}
+                           />
+                        )}
+
                          {input.overtimeValue > 0 && <ResultCard title="Horas Extras" amount={input.overtimeValue} type="info" />}
                          {input.commissions > 0 && <ResultCard title="Comisiones" amount={input.commissions} type="info" />}
                       </div>

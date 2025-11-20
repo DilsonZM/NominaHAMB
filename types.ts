@@ -1,3 +1,4 @@
+
 export interface PayrollInput {
   baseSalary: number;
   extralegalBonus: number; 
@@ -38,7 +39,8 @@ export interface CalculatedResults {
   disabilityPay: number;    // Pago por incapacidad
   paidLeavePay: number;     // Pago por licencias remuneradas
   
-  bonusPay: number;         // Pago proporcional de bonos (Extralegal + Alimentación)
+  extralegalBonusPay: number; // Pago proporcional Bono Extralegal
+  foodBonusPay: number;       // Pago proporcional Auxilio Alimentación
 
   grossIncome: number;      // Total Devengado
   healthDeduction: number;  
