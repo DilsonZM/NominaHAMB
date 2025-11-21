@@ -21,7 +21,7 @@ export const SheetModal = ({ isOpen, onClose, title, icon: Icon, children, color
       ></div>
       
       {/* Modal / Sheet */}
-      <div className="bg-white dark:bg-[#161E2E] w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl transform transition-transform duration-300 pointer-events-auto animate-in slide-in-from-bottom-10 max-h-[92vh] flex flex-col relative overflow-hidden">
+      <div className="bg-white dark:bg-[#161E2E] w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl transform transition-transform duration-300 pointer-events-auto animate-in slide-in-from-bottom-10 max-h-[85vh] flex flex-col relative overflow-hidden">
         <div className="pt-6 px-6 pb-0 flex-shrink-0">
             <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-6"></div>
             
