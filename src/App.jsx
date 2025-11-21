@@ -228,12 +228,15 @@ export default function App() {
                <span className="text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">{isOnline ? 'En Línea' : 'Offline'}</span>
             </div>
 
-            <button 
-              onClick={() => setIsDark(!isDark)}
-              className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-            >
-              {isDark ? <Icons.Sun /> : <Icons.Moon />}
-            </button>
+            <div className="flex items-center gap-3">
+               <span className="hidden md:block text-[10px] font-mono text-slate-400 opacity-50">{APP_VERSION}</span>
+               <button 
+                  onClick={() => setIsDark(!isDark)}
+                  className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                >
+                  {isDark ? <Icons.Sun /> : <Icons.Moon />}
+                </button>
+            </div>
           </div>
           {/* Mobile Only Total */}
           <div className="md:hidden text-center mt-2 pb-1">
