@@ -176,8 +176,8 @@ export default function App() {
                 <Icons.Calc />
               </div>
               <div className="hidden md:block">
-                 <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                  {formatMoney(payroll.neto)}
+                 <h1 className="text-xl font-black tracking-tight">
+                  <span className="text-slate-900 dark:text-white">Nómina HAMB</span> <span className="bg-gradient-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text">Inteligente</span>
                 </h1>
               </div>
             </div>
