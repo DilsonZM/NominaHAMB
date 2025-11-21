@@ -2,14 +2,15 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { formatMoney } from './utils/formatMoney';
 import { Icons } from './components/Icons';
 import { TOOLS } from './constants/tools';
-import { isHoliday, isBusinessDay } from './utils/holidays';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import { PayrollPDF } from './components/PayrollPDF';
+import { RATES } from './constants/rates';
+import { isBusinessDay } from './utils/holidays';
 import { BottomNav } from './components/BottomNav';
-import { OvertimeCalculator } from './components/OvertimeCalculator';
 import { SheetModal } from './components/SheetModal';
 import { NovedadesContent } from './components/NovedadesContent';
 import { DeductionsContent } from './components/DeductionsContent';
+import { SalaryContent } from './components/SalaryContent';
+import { OvertimeContent } from './components/OvertimeContent';
+import { SummaryContent } from './components/SummaryContent';
 
 // Hook personalizado para persistencia en localStorage
 function useLocalStorage(key, initialValue) {
@@ -34,7 +35,7 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setStoredValue];
 }
 
-const APP_VERSION = "v1.3.11";
+const APP_VERSION = "v1.4.0";
 
 export default function App() {
   // --- TEMA ---
@@ -53,21 +54,23 @@ export default function App() {
   }, []);
 
   // --- ESTADOS DE DATOS ---
-  // Usamos cadenas vacías '' o números para los inputs para evitar el "0" pegajoso
   const [salary, setSalary] = useLocalStorage('hamb_salary', 1800000);
   const [bonus, setBonus] = useLocalStorage('hamb_bonus', 4550000);
   const [food, setFood] = useLocalStorage('hamb_food', 452000);
-  const [showCalendar, setShowCalendar] = useLocalStorage('hamb_showCalendar', false); 
-  const [showDeductions, setShowDeductions] = useLocalStorage('hamb_showDeductions', false); 
+  
+  // Navigation State
   const [activeTab, setActiveTab] = useState('home');
-  const [showOvertime, setShowOvertime] = useState(false);
-  const [overtimeValue, setOvertimeValue] = useLocalStorage('hamb_overtimeValue', 0);
+  
+  // Overtime State (Persisted as object now)
+  const [overtimeHours, setOvertimeHours] = useLocalStorage('hamb_overtimeHours', {
+    HED: 0, HEN: 0, RN: 0, DD: 0, HEDF: 0, HENF: 0
+  });
 
   const [otrosIngresos, setOtrosIngresos] = useLocalStorage('hamb_otrosIngresos', 0); 
   const [prestamos, setPrestamos] = useLocalStorage('hamb_prestamos', 0); 
   const [funebres, setFunebres] = useLocalStorage('hamb_funebres', 0); 
 
-  // FECHAS DE CONTRATO (Strings para manejar el input vacío)
+  // FECHAS DE CONTRATO
   const [startDayInput, setStartDayInput] = useLocalStorage('hamb_startDayInput', '1');
   const [endDayInput, setEndDayInput] = useLocalStorage('hamb_endDayInput', '30');
 
@@ -79,20 +82,22 @@ export default function App() {
 
   const [counters, setCounters] = useState({ VAC: 0, INC: 0, REM: 0, LNR: 0, MAT: 0, VAC_REST: 0, RMT: 0, MED: 0, PRM: 0, PNR: 0 });
 
+  // Desktop Collapsible States
+  const [showCalendar, setShowCalendar] = useLocalStorage('hamb_showCalendar', false); 
+  const [showDeductions, setShowDeductions] = useLocalStorage('hamb_showDeductions', false); 
+
   // --- LÓGICA ---
   
-  // Manejador de Inputs Numéricos Limpios
   const handleNumInput = (setter) => (e) => {
     const val = e.target.value;
     if (val === '') {
-      setter(''); // Permite borrar todo
+      setter(''); 
     } else {
       const num = parseFloat(val);
       if (!isNaN(num)) setter(num);
     }
   };
 
-  // Manejador específico para días (enteros)
   const handleDayInput = (setter) => (e) => {
     const val = e.target.value;
     if (val === '') {
@@ -104,11 +109,8 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Valores seguros para cálculo interno
     const sDay = parseInt(startDayInput) || 1;
     const eDay = parseInt(endDayInput) || 30;
-
-    // Obtener mes y año de la vista actual del calendario
     const currentMonth = viewDate.getMonth();
     const currentYear = viewDate.getFullYear();
 
@@ -116,13 +118,8 @@ export default function App() {
     
     events.forEach(ev => {
       const [y, m, d] = ev.date.split('-').map(Number);
-      
-      // FILTRO CLAVE: Solo procesar eventos que pertenezcan al mes y año que se está viendo en el calendario
       if (y === currentYear && (m - 1) === currentMonth) {
-          // Solo contar si el día está dentro del rango de contrato (ej: 1 al 30)
           if (d >= sDay && d <= eDay) {
-             // Lógica especial para VACACIONES: Solo contar días hábiles (No Domingos, No Festivos)
-             // Asumimos Sábado como hábil.
              if (ev.type === 'VAC') {
                 const dateObj = new Date(y, m - 1, d);
                 if (isBusinessDay(dateObj)) {
@@ -139,10 +136,6 @@ export default function App() {
     setCounters(newCounters);
   }, [events, startDayInput, endDayInput, viewDate]);
 
-  // Controlar visibilidad de Novedades: Se mantiene abierto solo si hay eventos marcados
-  // ELIMINADO: useEffect(() => { setShowCalendar(events.length > 0); }, [events]);
-  // Ahora el usuario controla manualmente si quiere ver el calendario o no, y se guarda en localStorage.
-
   const hasEventsInCurrentMonth = useMemo(() => {
     const currentMonth = viewDate.getMonth();
     const currentYear = viewDate.getFullYear();
@@ -153,20 +146,23 @@ export default function App() {
   }, [events, viewDate]);
 
   const payroll = useMemo(() => {
-    // Convertimos inputs a números seguros para la matemática (0 si están vacíos)
     const safeSalary = Number(salary) || 0;
     const safeBonus = Number(bonus) || 0;
     const safeFood = Number(food) || 0;
     const safeOtros = Number(otrosIngresos) || 0;
-    const safeOvertime = Number(overtimeValue) || 0;
     const safePrestamos = Number(prestamos) || 0;
     const safeFunebres = Number(funebres) || 0;
     const safeStart = parseInt(startDayInput) || 1;
     const safeEnd = parseInt(endDayInput) || 30;
 
-    const valorDia = safeSalary / 30;
+    // Calculate Overtime Value
+    const hourlyRate = safeSalary / 240;
+    const safeOvertime = Object.entries(overtimeHours).reduce((total, [key, hours]) => {
+        if (!RATES[key]) return total;
+        return total + (hours * hourlyRate * RATES[key].factor);
+    }, 0);
 
-    // Días reales de contrato
+    const valorDia = safeSalary / 30;
     const diasContrato = Math.max(0, (safeEnd - safeStart) + 1);
 
     const diasVacaciones = counters.VAC;
@@ -181,11 +177,8 @@ export default function App() {
     const diasPermisoRem = counters.PRM || 0;
     const diasPermisoNoRem = counters.PNR || 0;
 
-    // Días Físicos
-    // Restamos todo lo que no sea trabajo presencial
     const diasTrabajadosFisicos = Math.max(0, diasContrato - diasVacaciones - diasVacacionesResto - diasIncapacidad - diasNoRemun - diasLicRemun - diasLeyMaria - diasRemoto - diasCitaMedica - diasPermisoRem - diasPermisoNoRem);
 
-    // Pagos
     const pagoBasico = diasTrabajadosFisicos * valorDia;
     const pagoRemoto = diasRemoto * valorDia;
     const pagoCitaMedica = diasCitaMedica * valorDia;
@@ -197,9 +190,6 @@ export default function App() {
     const pagoLicRemun = diasLicRemun * valorDia;
     const pagoLeyMaria = diasLeyMaria * valorDia;
 
-    // Base para Auxilios (Bono y Alimentación)
-    // Se excluye Trabajo Remoto, Citas y Permisos, ya que no se asiste físicamente a la oficina.
-    // CAMBIO: Trabajo Remoto SÍ paga Bono Extralegal, pero NO paga Auxilio de Alimentación.
     const diasParaAlimentacion = diasTrabajadosFisicos + diasVacacionesResto;
     const diasParaBono = diasTrabajadosFisicos + diasVacacionesResto + diasRemoto;
 
@@ -208,7 +198,6 @@ export default function App() {
     
     const totalDevengado = pagoBasico + pagoRemoto + pagoCitaMedica + pagoPermisoRem + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria + bonoReal + auxAlimReal + safeOtros + safeOvertime;
 
-    // Deducciones
     const ibc = pagoBasico + pagoRemoto + pagoCitaMedica + pagoPermisoRem + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria + safeOvertime; 
     const salud = ibc * 0.04;
     const pension = ibc * 0.04;
@@ -251,10 +240,8 @@ export default function App() {
       diasParaBono,
       safeOvertime
     };
-  }, [salary, bonus, food, otrosIngresos, prestamos, funebres, counters, startDayInput, endDayInput, overtimeValue]);
+  }, [salary, bonus, food, otrosIngresos, prestamos, funebres, counters, startDayInput, endDayInput, overtimeHours]);
 
-  const getDaysInMonth = (d) => new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-  const getFirstDay = (d) => new Date(d.getFullYear(), d.getMonth(), 1).getDay();
   const handleMonthChange = (delta) => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() + delta)));
   
   const handleClearMonth = () => {
@@ -263,31 +250,25 @@ export default function App() {
         const currentYear = viewDate.getFullYear();
         setEvents(events.filter(ev => {
             const [y, m] = ev.date.split('-').map(Number);
-            // Mantener eventos que NO sean del mes/año actual
             return !(y === currentYear && (m - 1) === currentMonth);
         }));
     }
   };
 
   const handleDayClick = (day) => {
-    // Validar Rango
     const sDay = parseInt(startDayInput) || 1;
     const eDay = parseInt(endDayInput) || 30;
-    if(day < sDay || day > eDay) return; // No permitir marcar fuera de rango
+    if(day < sDay || day > eDay) return;
 
     const dateStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
     
     if (currentTool === 'DEL') {
-      // Simplemente eliminamos el evento. El renderizado se encargará de mostrar el color por defecto.
       setEvents(events.filter(e => e.date !== dateStr));
     } else {
       const existingEvent = events.find(e => e.date === dateStr);
-      
       if (existingEvent && existingEvent.type === TOOLS[currentTool].id) {
-        // Si ya existe y es del mismo tipo, lo borramos (toggle)
         setEvents(events.filter(e => e.date !== dateStr));
       } else {
-        // Si no existe o es de otro tipo, lo agregamos/reemplazamos
         const filtered = events.filter(e => e.date !== dateStr);
         setEvents([...filtered, { date: dateStr, type: TOOLS[currentTool].id }]);
       }
@@ -296,7 +277,7 @@ export default function App() {
 
   return (
     <div className={isDark ? 'dark' : ''}>
-      <div className="min-h-screen bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-slate-200 font-sans transition-colors duration-500 pb-20">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-slate-200 font-sans transition-colors duration-500 pb-24 md:pb-10">
         
         {/* HEADER */}
         <header className="sticky top-0 z-50 bg-white/80 dark:bg-[#0B1120]/90 backdrop-blur-md border-b border-slate-200 dark:border-white/5 px-4 py-2 shadow-sm dark:shadow-2xl transition-all duration-300 relative">
@@ -343,8 +324,8 @@ export default function App() {
         <main className="px-4 pt-4 pb-10 max-w-md md:max-w-7xl mx-auto animate-in slide-in-from-bottom-4 duration-700 fade-in">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             
-            {/* COLUMNA 1: INGRESOS BASE */}
-            <div className="space-y-4 lg:sticky lg:top-4 order-1 lg:order-1">
+            {/* COLUMNA 1: INGRESOS BASE (Desktop) */}
+            <div className="space-y-4 lg:sticky lg:top-4 order-1 lg:order-1 hidden md:block">
               <section className="bg-white dark:bg-[#161E2E] rounded-2xl p-4 border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-xl transition-colors duration-300">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-cyan-600 dark:text-cyan-400"><Icons.Card /></div>
@@ -353,246 +334,45 @@ export default function App() {
                     <p className="text-xs text-slate-500">Salario y Bonificaciones</p>
                   </div>
                 </div>
-
-                <div className="space-y-4">
-                  {[
-                    { label: "Salario Base Contrato", val: salary, set: setSalary },
-                    { label: "Bono Extralegal", val: bonus, set: setBonus },
-                    { label: "Aux. Alimentación", val: food, set: setFood },
-                  ].map((field, idx) => (
-                    <div key={idx} className="group">
-                      <div className="flex justify-between text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider px-1 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
-                        <span>{field.label}</span>
-                      </div>
-                      <div className="flex gap-3">
-                        <div className="flex-1 relative">
-                            <span className="absolute left-4 top-3.5 text-slate-400 dark:text-slate-500 font-mono">$</span>
-                            <input 
-                              type="number" 
-                              value={field.val}
-                              onChange={handleNumInput(field.set)}
-                              className="w-full bg-slate-50 dark:bg-[#0B1120] border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-8 pr-4 text-slate-700 dark:text-white font-bold focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all duration-300"
-                            />
+                <SalaryContent 
+                    salary={salary} setSalary={setSalary}
+                    bonus={bonus} setBonus={setBonus}
+                    food={food} setFood={setFood}
+                    otrosIngresos={otrosIngresos} setOtrosIngresos={setOtrosIngresos}
+                    handleNumInput={handleNumInput}
+                />
+                
+                {/* Desktop Overtime Trigger */}
+                <button 
+                    onClick={() => setActiveTab('overtime')}
+                    className="w-full mt-4 flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-xl hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors group"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="p-1.5 bg-amber-100 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400">
+                            <Icons.Clock />
                         </div>
-                      </div>
+                        <div className="text-left">
+                            <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase block">Horas Extras</span>
+                            <span className="text-[10px] text-amber-600/70 dark:text-amber-400/70 font-medium">Calcular Recargos</span>
+                        </div>
                     </div>
-                  ))}
-
-                  {/* INGRESOS ADICIONALES */}
-                  <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="p-1 bg-slate-100 dark:bg-slate-800 rounded text-blue-500 dark:text-blue-400"><Icons.Wallet /></div>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-300 uppercase">Ingresos Adicionales</span>
+                    <div className="text-amber-500 dark:text-amber-400">
+                        <Icons.ChevronRight />
                     </div>
-                    <div className="group">
-                      <div className="flex justify-between text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider px-1 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
-                        <span>Otros (Reintegros/Comisiones)</span>
-                      </div>
-                      <div className="flex gap-3">
-                        <div className="flex-1 relative">
-                            <span className="absolute left-4 top-3.5 text-slate-400 dark:text-slate-500 font-mono">$</span>
-                            <input 
-                              type="number" 
-                              value={otrosIngresos} 
-                              onChange={handleNumInput(setOtrosIngresos)} 
-                              className="w-full bg-slate-50 dark:bg-[#0B1120] border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-8 pr-4 text-slate-700 dark:text-white font-bold focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-300"
-                            />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* BOTÓN HORAS EXTRAS (SOLO DESKTOP) */}
-                    <button 
-                        onClick={() => setShowOvertime(true)}
-                        className="hidden md:flex w-full mt-4 items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-xl hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors group"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="p-1.5 bg-amber-100 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400">
-                                <Icons.Clock />
-                            </div>
-                            <div className="text-left">
-                                <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase block">Horas Extras</span>
-                                <span className="text-[10px] text-amber-600/70 dark:text-amber-400/70 font-medium">Calcular Recargos</span>
-                            </div>
-                        </div>
-                        <div className="text-amber-500 dark:text-amber-400">
-                            <Icons.ChevronRight />
-                        </div>
-                    </button>
-                  </div>
-
-                </div>
+                </button>
               </section>
             </div>
 
-            {/* COLUMNA 2: RESUMEN FINAL */}
+            {/* COLUMNA 2: RESUMEN FINAL (Always Visible) */}
             <div className="lg:sticky lg:top-4 order-3 lg:order-2">
-              <section className="bg-white dark:bg-[#161E2E] rounded-2xl p-5 border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-xl mb-8 transition-all hover:shadow-cyan-500/5 duration-500">
-                <div className="text-center mb-6">
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Total Neto a Pagar</p>
-                    <h2 className="text-3xl font-black text-slate-900 dark:text-white">{formatMoney(payroll.neto)}</h2>
-                </div>
-
-                <div className="space-y-4 text-sm">
-                    {/* DEVENGADOS */}
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase mb-2 tracking-wider flex items-center gap-2"><span className="w-4 h-[1px] bg-slate-300 dark:bg-slate-600"></span> Devengados</p>
-                      
-                      <div className="flex justify-between py-1">
-                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Salario Básico <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasTrabajadosFisicos}d</span></span>
-                          <span className="font-bold text-slate-800 dark:text-white">{formatMoney(payroll.pagoBasico)}</span>
-                      </div>
-
-                      {payroll.pagoRemoto > 0 && (
-                        <div className="flex justify-between py-1">
-                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Trabajo Remoto <span className="px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 rounded text-[9px] text-indigo-600 dark:text-indigo-300 font-mono">{payroll.diasRemoto}d</span></span>
-                            <span className="font-bold text-indigo-600 dark:text-indigo-400">{formatMoney(payroll.pagoRemoto)}</span>
-                        </div>
-                      )}
-
-                      {payroll.pagoCitaMedica > 0 && (
-                        <div className="flex justify-between py-1">
-                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Cita Médica <span className="px-1.5 py-0.5 bg-teal-50 dark:bg-teal-900/30 rounded text-[9px] text-teal-600 dark:text-teal-300 font-mono">{payroll.diasCitaMedica}d</span></span>
-                            <span className="font-bold text-teal-600 dark:text-teal-400">{formatMoney(payroll.pagoCitaMedica)}</span>
-                        </div>
-                      )}
-
-                      {payroll.pagoPermisoRem > 0 && (
-                        <div className="flex justify-between py-1">
-                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Permiso Remunerado <span className="px-1.5 py-0.5 bg-cyan-50 dark:bg-cyan-900/30 rounded text-[9px] text-cyan-600 dark:text-cyan-300 font-mono">{payroll.diasPermisoRem}d</span></span>
-                            <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatMoney(payroll.pagoPermisoRem)}</span>
-                        </div>
-                      )}
-
-                      {payroll.diasPermisoNoRem > 0 && (
-                        <div className="flex justify-between py-1 opacity-75">
-                            <span className="text-slate-500 dark:text-slate-400 flex items-center gap-2">Permiso No Rem. <span className="px-1.5 py-0.5 bg-orange-50 dark:bg-orange-900/30 rounded text-[9px] text-orange-600 dark:text-orange-300 font-mono">{payroll.diasPermisoNoRem}d</span></span>
-                            <span className="font-bold text-slate-400 dark:text-slate-500">$0</span>
-                        </div>
-                      )}
-
-                      {payroll.diasNoRemun > 0 && (
-                        <div className="flex justify-between py-1 opacity-75">
-                            <span className="text-slate-500 dark:text-slate-400 flex items-center gap-2">No Remun. <span className="px-1.5 py-0.5 bg-rose-50 dark:bg-rose-900/30 rounded text-[9px] text-rose-600 dark:text-rose-300 font-mono">{payroll.diasNoRemun}d</span></span>
-                            <span className="font-bold text-slate-400 dark:text-slate-500">$0</span>
-                        </div>
-                      )}
-                      
-                      {payroll.pagoVacaciones > 0 && (
-                        <div className="flex justify-between py-1">
-                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Vacaciones <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasVacaciones}d</span></span>
-                            <span className="font-bold text-slate-800 dark:text-white">{formatMoney(payroll.pagoVacaciones)}</span>
-                        </div>
-                      )}
-
-                      {payroll.pagoVacacionesResto > 0 && (
-                        <div className="flex justify-between py-1">
-                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Vacaciones (No Hábiles) <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasVacacionesResto}d</span></span>
-                            <span className="font-bold text-slate-800 dark:text-white">{formatMoney(payroll.pagoVacacionesResto)}</span>
-                        </div>
-                      )}
-
-                      {payroll.pagoLeyMaria > 0 && (
-                        <div className="flex justify-between py-1">
-                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Ley María <span className="px-1.5 py-0.5 bg-pink-100 dark:bg-pink-900/50 rounded text-[9px] text-pink-600 dark:text-pink-300 font-mono">{payroll.diasLeyMaria}d</span></span>
-                            <span className="font-bold text-pink-500 dark:text-pink-400">{formatMoney(payroll.pagoLeyMaria)}</span>
-                        </div>
-                      )}
-
-                      {payroll.pagoLicRemun > 0 && (
-                        <div className="flex justify-between py-1">
-                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Licencia Remunerada <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/50 rounded text-[9px] text-blue-600 dark:text-blue-300 font-mono">{payroll.diasLicRemun}d</span></span>
-                            <span className="font-bold text-blue-500 dark:text-blue-400">{formatMoney(payroll.pagoLicRemun)}</span>
-                        </div>
-                      )}
-
-                      {payroll.pagoIncapacidad > 0 && (
-                        <div className="flex justify-between py-1">
-                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Incapacidad <span className="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/50 rounded text-[9px] text-amber-600 dark:text-amber-300 font-mono">{payroll.diasIncapacidad}d</span></span>
-                            <span className="font-bold text-amber-500 dark:text-amber-400">{formatMoney(payroll.pagoIncapacidad)}</span>
-                        </div>
-                      )}
-                      
-                      <div className="flex justify-between py-1">
-                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Bono Extralegal <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasParaBono}d</span></span>
-                          <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatMoney(payroll.bonoReal)}</span>
-                      </div>
-
-                      <div className="flex justify-between py-1">
-                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Aux. Alimentación <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasParaAlimentacion}d</span></span>
-                          <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatMoney(payroll.auxAlimReal)}</span>
-                      </div>
-
-                      {payroll.safeOtros > 0 && (
-                          <div className="flex justify-between py-1">
-                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Otros Ingresos</span>
-                            <span className="font-bold text-blue-500 dark:text-blue-400">{formatMoney(payroll.safeOtros)}</span>
-                          </div>
-                      )}
-
-                      {payroll.safeOvertime > 0 && (
-                          <div className="flex justify-between py-1">
-                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Horas Extras</span>
-                            <span className="font-bold text-amber-500 dark:text-amber-400">{formatMoney(payroll.safeOvertime)}</span>
-                          </div>
-                      )}
-
-                      <div className="flex justify-between pt-3 border-t border-dashed border-slate-300 dark:border-slate-700 mt-2">
-                          <span className="text-slate-500 dark:text-slate-400 font-bold uppercase text-xs">Total Ingresos</span>
-                          <span className="font-bold text-slate-900 dark:text-white text-lg">{formatMoney(payroll.devengado)}</span>
-                      </div>
-                    </div>
-
-                    {/* DEDUCCIONES */}
-                    <div className="pt-4">
-                      <p className="text-[10px] font-bold text-slate-500 uppercase mb-2 tracking-wider flex items-center gap-2"><span className="w-4 h-[1px] bg-slate-300 dark:bg-slate-600"></span> Deducciones</p>
-                      <div className="flex justify-between py-1">
-                          <span className="text-slate-600 dark:text-slate-300">Salud (4%)</span>
-                          <span className="font-bold text-rose-500 dark:text-rose-400">- {formatMoney(payroll.salud)}</span>
-                      </div>
-                      <div className="flex justify-between py-1">
-                          <span className="text-slate-600 dark:text-slate-300">Pensión (4%)</span>
-                          <span className="font-bold text-rose-500 dark:text-rose-400">- {formatMoney(payroll.pension)}</span>
-                      </div>
-                      {payroll.safeFunebres > 0 && (
-                          <div className="flex justify-between py-1">
-                            <span className="text-slate-600 dark:text-slate-300">Seguro Exequial</span>
-                            <span className="font-bold text-rose-500 dark:text-rose-400">- {formatMoney(payroll.safeFunebres)}</span>
-                          </div>
-                      )}
-                      {payroll.safePrestamos > 0 && (
-                          <div className="flex justify-between py-1">
-                            <span className="text-slate-600 dark:text-slate-300">Préstamos / Deudas</span>
-                            <span className="font-bold text-rose-500 dark:text-rose-400">- {formatMoney(payroll.safePrestamos)}</span>
-                          </div>
-                      )}
-                      <div className="mt-4 p-4 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-xl flex justify-between items-center transition-colors hover:bg-rose-100 dark:hover:bg-rose-500/15">
-                          <span className="text-rose-500 dark:text-rose-400 font-bold text-xs uppercase">Total Deducciones</span>
-                          <span className="font-black text-rose-600 dark:text-rose-400 text-lg">- {formatMoney(payroll.deducciones)}</span>
-                      </div>
-                    </div>
-
-                    {/* PDF DOWNLOAD BUTTON */}
-                    <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-                      <PDFDownloadLink
-                        document={<PayrollPDF payroll={payroll} period={{ start: startDayInput, end: endDayInput }} />}
-                        fileName={`Nomina_HAMB_${viewDate.getFullYear()}_${viewDate.getMonth() + 1}.pdf`}
-                        className="w-full group flex items-center justify-center gap-3 py-3 px-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-500/50 dark:hover:border-cyan-400/50 rounded-xl transition-all duration-300"
-                      >
-                        {({ blob, url, loading, error }) =>
-                          loading ? 'Generando PDF...' : (
-                            <>
-                              <div className="p-1.5 bg-white dark:bg-slate-700 rounded-lg text-slate-400 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 shadow-sm transition-colors">
-                                <Icons.Download className="w-4 h-4" />
-                              </div>
-                              <span className="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white uppercase tracking-wider transition-colors">Descargar Comprobante</span>
-                            </>
-                          )
-                        }
-                      </PDFDownloadLink>
-                    </div>
-                </div>
-              </section>
+              <SummaryContent 
+                payroll={payroll}
+                viewDate={viewDate}
+                startDayInput={startDayInput}
+                endDayInput={endDayInput}
+                overtimeHours={overtimeHours}
+                salary={salary}
+              />
             </div>
 
             {/* COLUMNA 3: NOVEDADES Y DEDUCCIONES (Desktop Only) */}
@@ -674,24 +454,27 @@ export default function App() {
         <div className="md:hidden">
           <BottomNav 
               activeTab={activeTab} 
-              onTabChange={(tab) => {
-                  setActiveTab(tab);
-                  if (tab === 'overtime') setShowOvertime(true);
-              }}
+              onTabChange={setActiveTab}
           />
         </div>
 
-        <OvertimeCalculator 
-            salary={salary}
-            isOpen={showOvertime}
-            onClose={() => {
-                setShowOvertime(false);
-                setActiveTab('home');
-            }}
-            onChange={setOvertimeValue}
-        />
-
         {/* MOBILE MODALS */}
+        <SheetModal 
+            isOpen={activeTab === 'salary'} 
+            onClose={() => setActiveTab('home')}
+            title="Salario y Pagos"
+            icon={Icons.Wallet}
+            color="text-cyan-500 dark:text-cyan-400"
+        >
+            <SalaryContent 
+                salary={salary} setSalary={setSalary}
+                bonus={bonus} setBonus={setBonus}
+                food={food} setFood={setFood}
+                otrosIngresos={otrosIngresos} setOtrosIngresos={setOtrosIngresos}
+                handleNumInput={handleNumInput}
+            />
+        </SheetModal>
+
         <SheetModal 
             isOpen={activeTab === 'novedades'} 
             onClose={() => setActiveTab('home')}
@@ -725,37 +508,19 @@ export default function App() {
         </SheetModal>
 
         <SheetModal 
-            isOpen={activeTab === 'pdf'} 
+            isOpen={activeTab === 'overtime'} 
             onClose={() => setActiveTab('home')}
-            title="Exportar PDF"
-            icon={Icons.Download}
-            color="text-cyan-500 dark:text-cyan-400"
+            title="Horas Extras"
+            icon={Icons.Clock}
+            color="text-amber-500 dark:text-amber-400"
         >
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-                <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 text-slate-400">
-                    <Icons.Download className="w-10 h-10" />
-                </div>
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Comprobante de Nómina</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-xs">
-                    Descarga el detalle completo de tu nómina en formato PDF listo para imprimir o guardar.
-                </p>
-                
-                <PDFDownloadLink
-                    document={<PayrollPDF payroll={payroll} period={{ start: startDayInput, end: endDayInput }} />}
-                    fileName={`Nomina_HAMB_${viewDate.getFullYear()}_${viewDate.getMonth() + 1}.pdf`}
-                    className="w-full max-w-xs group flex items-center justify-center gap-3 py-4 px-6 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl shadow-lg shadow-cyan-500/30 transition-all duration-300 transform hover:scale-105"
-                >
-                    {({ blob, url, loading, error }) =>
-                        loading ? 'Generando...' : (
-                        <>
-                            <Icons.Download className="w-5 h-5" />
-                            <span className="font-bold uppercase tracking-wider">Descargar PDF</span>
-                        </>
-                        )
-                    }
-                </PDFDownloadLink>
-            </div>
+            <OvertimeContent 
+                salary={salary}
+                hours={overtimeHours}
+                onChange={setOvertimeHours}
+            />
         </SheetModal>
+
       </div>
     </div>
   );
