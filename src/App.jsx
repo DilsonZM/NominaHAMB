@@ -3,9 +3,32 @@ import { formatMoney } from './utils/formatMoney';
 import { Icons } from './components/Icons';
 import { TOOLS } from './constants/tools';
 
+// Hook personalizado para persistencia en localStorage
+function useLocalStorage(key, initialValue) {
+  const [storedValue, setStoredValue] = useState(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error(error);
+      return initialValue;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(storedValue));
+    } catch (error) {
+      console.error(error);
+    }
+  }, [key, storedValue]);
+
+  return [storedValue, setStoredValue];
+}
+
 export default function App() {
   // --- TEMA ---
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useLocalStorage('hamb_isDark', true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
@@ -21,25 +44,24 @@ export default function App() {
 
   // --- ESTADOS DE DATOS ---
   // Usamos cadenas vacías '' o números para los inputs para evitar el "0" pegajoso
-  const [salary, setSalary] = useState(1800000);
-  const [bonus, setBonus] = useState(4550000);
-  const [food, setFood] = useState(452000);
-
+  const [salary, setSalary] = useLocalStorage('hamb_salary', 1800000);
+  const [bonus, setBonus] = useLocalStorage('hamb_bonus', 4550000);
+  const [food, setFood] = useLocalStorage('hamb_food', 452000);
   const [showCalendar, setShowCalendar] = useState(false); 
   const [showDeductions, setShowDeductions] = useState(false); 
 
-  const [otrosIngresos, setOtrosIngresos] = useState(0); 
-  const [prestamos, setPrestamos] = useState(0); 
-  const [funebres, setFunebres] = useState(0); 
+  const [otrosIngresos, setOtrosIngresos] = useLocalStorage('hamb_otrosIngresos', 0); 
+  const [prestamos, setPrestamos] = useLocalStorage('hamb_prestamos', 0); 
+  const [funebres, setFunebres] = useLocalStorage('hamb_funebres', 0); 
 
   // FECHAS DE CONTRATO (Strings para manejar el input vacío)
-  const [startDayInput, setStartDayInput] = useState('1');
-  const [endDayInput, setEndDayInput] = useState('30');
+  const [startDayInput, setStartDayInput] = useLocalStorage('hamb_startDayInput', '1');
+  const [endDayInput, setEndDayInput] = useLocalStorage('hamb_endDayInput', '30');
 
   const [currentTool, setCurrentTool] = useState('VACACIONES');
   const [viewDate, setViewDate] = useState(new Date(2025, 10, 1));
   
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useLocalStorage('hamb_events', []);
 
   const [counters, setCounters] = useState({ VAC: 0, INC: 0, REM: 0, LNR: 0, MAT: 0 });
 
