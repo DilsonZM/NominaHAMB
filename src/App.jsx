@@ -27,7 +27,7 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setStoredValue];
 }
 
-const APP_VERSION = "v1.2.0";
+const APP_VERSION = "v1.3.0";
 
 export default function App() {
   // --- TEMA ---
@@ -62,11 +62,12 @@ export default function App() {
   const [endDayInput, setEndDayInput] = useLocalStorage('hamb_endDayInput', '30');
 
   const [currentTool, setCurrentTool] = useState('VACACIONES');
+  const [isToolOpen, setIsToolOpen] = useState(false);
   const [viewDate, setViewDate] = useState(new Date(2025, 10, 1));
   
   const [events, setEvents] = useLocalStorage('hamb_events', []);
 
-  const [counters, setCounters] = useState({ VAC: 0, INC: 0, REM: 0, LNR: 0, MAT: 0 });
+  const [counters, setCounters] = useState({ VAC: 0, INC: 0, REM: 0, LNR: 0, MAT: 0, VAC_REST: 0, RMT: 0, MED: 0, PRM: 0, PNR: 0 });
 
   // --- LÓGICA ---
   
@@ -101,7 +102,7 @@ export default function App() {
     const currentMonth = viewDate.getMonth();
     const currentYear = viewDate.getFullYear();
 
-    const newCounters = { VAC: 0, INC: 0, REM: 0, LNR: 0, MAT: 0, VAC_REST: 0 };
+    const newCounters = { VAC: 0, INC: 0, REM: 0, LNR: 0, MAT: 0, VAC_REST: 0, RMT: 0, MED: 0, PRM: 0, PNR: 0 };
     
     events.forEach(ev => {
       const [y, m, d] = ev.date.split('-').map(Number);
@@ -155,27 +156,38 @@ export default function App() {
     const diasNoRemun = counters.LNR;
     const diasLicRemun = counters.REM;
     const diasLeyMaria = counters.MAT;
+    
+    const diasRemoto = counters.RMT || 0;
+    const diasCitaMedica = counters.MED || 0;
+    const diasPermisoRem = counters.PRM || 0;
+    const diasPermisoNoRem = counters.PNR || 0;
 
     // Días Físicos
-    // Restamos también los días de vacaciones no hábiles para que no se paguen como salario básico,
-    // sino que los mostraremos en una línea separada (aunque el valor es el mismo).
-    const diasTrabajadosFisicos = Math.max(0, diasContrato - diasVacaciones - diasVacacionesResto - diasIncapacidad - diasNoRemun - diasLicRemun - diasLeyMaria);
+    // Restamos todo lo que no sea trabajo presencial
+    const diasTrabajadosFisicos = Math.max(0, diasContrato - diasVacaciones - diasVacacionesResto - diasIncapacidad - diasNoRemun - diasLicRemun - diasLeyMaria - diasRemoto - diasCitaMedica - diasPermisoRem - diasPermisoNoRem);
 
     // Pagos
     const pagoBasico = diasTrabajadosFisicos * valorDia;
+    const pagoRemoto = diasRemoto * valorDia;
+    const pagoPermisos = (diasCitaMedica + diasPermisoRem) * valorDia;
+    
     const pagoVacaciones = diasVacaciones * valorDia; 
     const pagoVacacionesResto = diasVacacionesResto * valorDia;
     const pagoIncapacidad = diasIncapacidad * valorDia; 
     const pagoLicRemun = diasLicRemun * valorDia;
     const pagoLeyMaria = diasLeyMaria * valorDia;
 
-    const bonoReal = (safeBonus / 30) * (diasTrabajadosFisicos + diasVacacionesResto); // El bono suele pagarse completo si son vacaciones
-    const auxAlimReal = (safeFood / 30) * (diasTrabajadosFisicos + diasVacacionesResto);
+    // Base para Auxilios (Bono y Alimentación)
+    // Asumimos que se pagan en días trabajados (físico o remoto) y permisos remunerados cortos
+    const diasParaAuxilios = diasTrabajadosFisicos + diasRemoto + diasCitaMedica + diasPermisoRem + diasVacacionesResto;
+
+    const bonoReal = (safeBonus / 30) * diasParaAuxilios; 
+    const auxAlimReal = (safeFood / 30) * diasParaAuxilios;
     
-    const totalDevengado = pagoBasico + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria + bonoReal + auxAlimReal + safeOtros;
+    const totalDevengado = pagoBasico + pagoRemoto + pagoPermisos + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria + bonoReal + auxAlimReal + safeOtros;
 
     // Deducciones
-    const ibc = pagoBasico + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria; 
+    const ibc = pagoBasico + pagoRemoto + pagoPermisos + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria; 
     const salud = ibc * 0.04;
     const pension = ibc * 0.04;
     
@@ -188,6 +200,8 @@ export default function App() {
       salud,
       pension,
       pagoBasico,
+      pagoRemoto,
+      pagoPermisos,
       pagoVacaciones,
       pagoVacacionesResto,
       pagoIncapacidad,
@@ -195,6 +209,10 @@ export default function App() {
       bonoReal,
       auxAlimReal,
       diasTrabajadosFisicos,
+      diasRemoto,
+      diasCitaMedica,
+      diasPermisoRem,
+      diasPermisoNoRem,
       diasVacaciones,
       diasVacacionesResto,
       diasIncapacidad,
@@ -364,6 +382,20 @@ export default function App() {
                           <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Salario Básico <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasTrabajadosFisicos}d</span></span>
                           <span className="font-bold text-slate-800 dark:text-white">{formatMoney(payroll.pagoBasico)}</span>
                       </div>
+
+                      {payroll.pagoRemoto > 0 && (
+                        <div className="flex justify-between py-1">
+                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Trabajo Remoto <span className="px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 rounded text-[9px] text-indigo-600 dark:text-indigo-300 font-mono">{payroll.diasRemoto}d</span></span>
+                            <span className="font-bold text-indigo-600 dark:text-indigo-400">{formatMoney(payroll.pagoRemoto)}</span>
+                        </div>
+                      )}
+
+                      {payroll.pagoPermisos > 0 && (
+                        <div className="flex justify-between py-1">
+                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Permisos / Citas <span className="px-1.5 py-0.5 bg-teal-50 dark:bg-teal-900/30 rounded text-[9px] text-teal-600 dark:text-teal-300 font-mono">{payroll.diasCitaMedica + payroll.diasPermisoRem}d</span></span>
+                            <span className="font-bold text-teal-600 dark:text-teal-400">{formatMoney(payroll.pagoPermisos)}</span>
+                        </div>
+                      )}
                       
                       {payroll.pagoVacaciones > 0 && (
                         <div className="flex justify-between py-1">
@@ -394,12 +426,12 @@ export default function App() {
                       )}
                       
                       <div className="flex justify-between py-1">
-                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Bono Extralegal <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasTrabajadosFisicos + payroll.diasVacacionesResto}d</span></span>
+                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Bono Extralegal <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{Math.round(payroll.bonoReal / (payroll.safeBonus/30 || 1))}d</span></span>
                           <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatMoney(payroll.bonoReal)}</span>
                       </div>
 
                       <div className="flex justify-between py-1">
-                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Aux. Alimentación <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasTrabajadosFisicos + payroll.diasVacacionesResto}d</span></span>
+                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Aux. Alimentación <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{Math.round(payroll.auxAlimReal / (payroll.safeFood/30 || 1))}d</span></span>
                           <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatMoney(payroll.auxAlimReal)}</span>
                       </div>
 
@@ -499,16 +531,43 @@ export default function App() {
                   </div>
 
                   <div className="px-5 py-3">
-                    <div className="flex flex-wrap gap-2 mb-3">
-                        {Object.entries(TOOLS).map(([key, tool]) => (
-                          <button
-                            key={key}
-                            onClick={() => setCurrentTool(key)}
-                            className={`px-2 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all border ${currentTool === key ? `${tool.color} text-white border-transparent shadow-md scale-105` : 'bg-slate-50 dark:bg-[#0B1120] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700'}`}
-                          >
-                            {tool.label}
-                          </button>
-                        ))}
+                    {/* SELECTOR DE NOVEDAD (DROPDOWN) */}
+                    <div className="relative mb-4 z-20">
+                      <button 
+                        onClick={() => setIsToolOpen(!isToolOpen)}
+                        className="w-full flex items-center justify-between p-3 bg-white dark:bg-[#0B1120] border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:border-cyan-500/50 transition-all group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-3 h-3 rounded-full ${TOOLS[currentTool].color} shadow-sm ring-2 ring-white dark:ring-[#0B1120]`}></div>
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-200 tracking-wide">{TOOLS[currentTool].label}</span>
+                        </div>
+                        <div className={`text-slate-400 transition-transform duration-300 ${isToolOpen ? 'rotate-180' : ''}`}>
+                          <Icons.ChevronDown />
+                        </div>
+                      </button>
+
+                      {isToolOpen && (
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#161E2E] border border-slate-100 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden p-1 animate-in fade-in zoom-in-95 duration-200">
+                          <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                            {Object.entries(TOOLS).map(([key, tool]) => (
+                              <button
+                                key={key}
+                                onClick={() => {
+                                  setCurrentTool(key);
+                                  setIsToolOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-colors ${currentTool === key ? 'bg-slate-50 dark:bg-slate-800' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${tool.color}`}></div>
+                                <span className={`text-xs font-bold uppercase tracking-wide ${currentTool === key ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                                  {tool.label}
+                                </span>
+                                {currentTool === key && <span className="ml-auto text-cyan-500"><Icons.Check /></span>} 
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="bg-slate-50 dark:bg-[#0B1120] rounded-xl p-3 border border-slate-200 dark:border-slate-800">
