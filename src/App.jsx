@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { formatMoney } from './utils/formatMoney';
 import { Icons } from './components/Icons';
 import { TOOLS } from './constants/tools';
+import { isHoliday, isBusinessDay } from './utils/holidays';
 
 // Hook personalizado para persistencia en localStorage
 function useLocalStorage(key, initialValue) {
@@ -101,7 +102,17 @@ export default function App() {
       // Solo contar si el evento está dentro del rango de contrato
       const day = parseInt(ev.date.split('-')[2]);
       if (day >= sDay && day <= eDay) {
-         if (newCounters[ev.type] !== undefined) newCounters[ev.type]++;
+         // Lógica especial para VACACIONES: Solo contar días hábiles (No Domingos, No Festivos)
+         // Asumimos Sábado como hábil.
+         if (ev.type === 'VAC') {
+            const [y, m, d] = ev.date.split('-').map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            if (isBusinessDay(dateObj)) {
+               if (newCounters[ev.type] !== undefined) newCounters[ev.type]++;
+            }
+         } else {
+            if (newCounters[ev.type] !== undefined) newCounters[ev.type]++;
+         }
       }
     });
     setCounters(newCounters);
@@ -488,21 +499,37 @@ export default function App() {
                             const eDay = parseInt(endDayInput) || 30;
                             const isInactive = day < sDay || day > eDay;
 
+                            const dateObj = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+                            const isSun = dateObj.getDay() === 0;
+                            const isSat = dateObj.getDay() === 6;
+                            const isHol = isHoliday(dateObj);
+
+                            let dayClass = 'bg-white dark:bg-[#1E293B] text-slate-600 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700';
+                            
+                            if (isInactive) {
+                                dayClass = 'bg-slate-100 dark:bg-[#111827] text-slate-300 dark:text-slate-700 cursor-not-allowed';
+                            } else if (tool) {
+                                dayClass = `${tool.color} text-white shadow-md transform scale-95`;
+                            } else if (isHol) {
+                                dayClass = 'bg-rose-50 dark:bg-rose-900/20 text-rose-500 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30';
+                            } else if (isSun) {
+                                dayClass = 'bg-slate-50 dark:bg-slate-800/50 text-rose-400 dark:text-rose-400/70';
+                            } else if (isSat) {
+                                dayClass = 'bg-slate-50 dark:bg-slate-800/50 text-blue-400 dark:text-blue-400/70';
+                            }
+
                             return (
                               <button 
                                 key={day} 
                                 onClick={() => handleDayClick(day)} 
                                 disabled={isInactive}
                                 className={`
-                                  aspect-square rounded-lg text-sm font-bold flex items-center justify-center transition-all duration-200 
-                                  ${isInactive 
-                                    ? 'bg-slate-100 dark:bg-[#111827] text-slate-300 dark:text-slate-700 cursor-not-allowed' // Gris inactivo
-                                    : tool 
-                                        ? `${tool.color} text-white shadow-md transform scale-95` 
-                                        : 'bg-white dark:bg-[#1E293B] text-slate-600 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'} 
+                                  aspect-square rounded-lg text-sm font-bold flex items-center justify-center transition-all duration-200 relative
+                                  ${dayClass}
                                 `}
                               >
                                 {day}
+                                {isHol && !tool && !isInactive && <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>}
                               </button>
                             )
                           })}
