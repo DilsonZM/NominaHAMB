@@ -215,6 +215,13 @@ export const PayrollPDF = ({ payroll, period }) => (
                 </View>
             )}
 
+            {payroll.safeOvertime > 0 && (
+                <View style={styles.row}>
+                    <Text style={styles.colLabel}>Horas Extras / Recargos</Text>
+                    <Text style={styles.colValue}>{formatCurrency(payroll.safeOvertime)}</Text>
+                </View>
+            )}
+
             <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>TOTAL DEVENGADO</Text>
                 <Text style={styles.totalValue}>{formatCurrency(payroll.devengado)}</Text>

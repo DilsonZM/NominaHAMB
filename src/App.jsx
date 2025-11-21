@@ -5,6 +5,8 @@ import { TOOLS } from './constants/tools';
 import { isHoliday, isBusinessDay } from './utils/holidays';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { PayrollPDF } from './components/PayrollPDF';
+import { BottomNav } from './components/BottomNav';
+import { OvertimeCalculator } from './components/OvertimeCalculator';
 
 // Hook personalizado para persistencia en localStorage
 function useLocalStorage(key, initialValue) {
@@ -54,6 +56,9 @@ export default function App() {
   const [food, setFood] = useLocalStorage('hamb_food', 452000);
   const [showCalendar, setShowCalendar] = useLocalStorage('hamb_showCalendar', false); 
   const [showDeductions, setShowDeductions] = useLocalStorage('hamb_showDeductions', false); 
+  const [activeTab, setActiveTab] = useState('home');
+  const [showOvertime, setShowOvertime] = useState(false);
+  const [overtimeValue, setOvertimeValue] = useLocalStorage('hamb_overtimeValue', 0);
 
   const [otrosIngresos, setOtrosIngresos] = useLocalStorage('hamb_otrosIngresos', 0); 
   const [prestamos, setPrestamos] = useLocalStorage('hamb_prestamos', 0); 
@@ -150,6 +155,7 @@ export default function App() {
     const safeBonus = Number(bonus) || 0;
     const safeFood = Number(food) || 0;
     const safeOtros = Number(otrosIngresos) || 0;
+    const safeOvertime = Number(overtimeValue) || 0;
     const safePrestamos = Number(prestamos) || 0;
     const safeFunebres = Number(funebres) || 0;
     const safeStart = parseInt(startDayInput) || 1;
@@ -197,10 +203,10 @@ export default function App() {
     const bonoReal = (safeBonus / 30) * diasParaBono; 
     const auxAlimReal = (safeFood / 30) * diasParaAlimentacion;
     
-    const totalDevengado = pagoBasico + pagoRemoto + pagoCitaMedica + pagoPermisoRem + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria + bonoReal + auxAlimReal + safeOtros;
+    const totalDevengado = pagoBasico + pagoRemoto + pagoCitaMedica + pagoPermisoRem + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria + bonoReal + auxAlimReal + safeOtros + safeOvertime;
 
     // Deducciones
-    const ibc = pagoBasico + pagoRemoto + pagoCitaMedica + pagoPermisoRem + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria; 
+    const ibc = pagoBasico + pagoRemoto + pagoCitaMedica + pagoPermisoRem + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria + safeOvertime; 
     const salud = ibc * 0.04;
     const pension = ibc * 0.04;
     
@@ -239,9 +245,10 @@ export default function App() {
       safeFunebres,
       diasContrato,
       diasParaAlimentacion,
-      diasParaBono
+      diasParaBono,
+      safeOvertime
     };
-  }, [salary, bonus, food, otrosIngresos, prestamos, funebres, counters, startDayInput, endDayInput]);
+  }, [salary, bonus, food, otrosIngresos, prestamos, funebres, counters, startDayInput, endDayInput, overtimeValue]);
 
   const getDaysInMonth = (d) => new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
   const getFirstDay = (d) => new Date(d.getFullYear(), d.getMonth(), 1).getDay();
@@ -498,6 +505,13 @@ export default function App() {
                           <div className="flex justify-between py-1">
                             <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Otros Ingresos</span>
                             <span className="font-bold text-blue-500 dark:text-blue-400">{formatMoney(payroll.safeOtros)}</span>
+                          </div>
+                      )}
+
+                      {payroll.safeOvertime > 0 && (
+                          <div className="flex justify-between py-1">
+                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Horas Extras</span>
+                            <span className="font-bold text-amber-500 dark:text-amber-400">{formatMoney(payroll.safeOvertime)}</span>
                           </div>
                       )}
 
@@ -824,6 +838,25 @@ export default function App() {
             {APP_VERSION}
           </p>
         </footer>
+
+        <BottomNav 
+            activeTab={activeTab} 
+            onTabChange={(tab) => {
+                setActiveTab(tab);
+                if (tab === 'overtime') setShowOvertime(true);
+            }}
+            onMainAction={() => setShowCalendar(true)}
+        />
+
+        <OvertimeCalculator 
+            salary={salary}
+            isOpen={showOvertime}
+            onClose={() => {
+                setShowOvertime(false);
+                setActiveTab('home');
+            }}
+            onChange={setOvertimeValue}
+        />
       </div>
     </div>
   );
