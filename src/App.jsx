@@ -27,7 +27,7 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setStoredValue];
 }
 
-const APP_VERSION = "v1.3.5";
+const APP_VERSION = "v1.3.7";
 
 export default function App() {
   // --- TEMA ---
@@ -169,7 +169,8 @@ export default function App() {
     // Pagos
     const pagoBasico = diasTrabajadosFisicos * valorDia;
     const pagoRemoto = diasRemoto * valorDia;
-    const pagoPermisos = (diasCitaMedica + diasPermisoRem) * valorDia;
+    const pagoCitaMedica = diasCitaMedica * valorDia;
+    const pagoPermisoRem = diasPermisoRem * valorDia;
     
     const pagoVacaciones = diasVacaciones * valorDia; 
     const pagoVacacionesResto = diasVacacionesResto * valorDia;
@@ -184,10 +185,10 @@ export default function App() {
     const bonoReal = (safeBonus / 30) * diasParaAuxilios; 
     const auxAlimReal = (safeFood / 30) * diasParaAuxilios;
     
-    const totalDevengado = pagoBasico + pagoRemoto + pagoPermisos + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria + bonoReal + auxAlimReal + safeOtros;
+    const totalDevengado = pagoBasico + pagoRemoto + pagoCitaMedica + pagoPermisoRem + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria + bonoReal + auxAlimReal + safeOtros;
 
     // Deducciones
-    const ibc = pagoBasico + pagoRemoto + pagoPermisos + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria; 
+    const ibc = pagoBasico + pagoRemoto + pagoCitaMedica + pagoPermisoRem + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria; 
     const salud = ibc * 0.04;
     const pension = ibc * 0.04;
     
@@ -201,7 +202,8 @@ export default function App() {
       pension,
       pagoBasico,
       pagoRemoto,
-      pagoPermisos,
+      pagoCitaMedica,
+      pagoPermisoRem,
       pagoVacaciones,
       pagoVacacionesResto,
       pagoIncapacidad,
@@ -214,6 +216,7 @@ export default function App() {
       diasCitaMedica,
       diasPermisoRem,
       diasPermisoNoRem,
+      diasNoRemun,
       diasVacaciones,
       diasVacacionesResto,
       diasIncapacidad,
@@ -393,10 +396,31 @@ export default function App() {
                         </div>
                       )}
 
-                      {payroll.pagoPermisos > 0 && (
+                      {payroll.pagoCitaMedica > 0 && (
                         <div className="flex justify-between py-1">
-                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Permisos / Citas <span className="px-1.5 py-0.5 bg-teal-50 dark:bg-teal-900/30 rounded text-[9px] text-teal-600 dark:text-teal-300 font-mono">{payroll.diasCitaMedica + payroll.diasPermisoRem}d</span></span>
-                            <span className="font-bold text-teal-600 dark:text-teal-400">{formatMoney(payroll.pagoPermisos)}</span>
+                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Cita Médica <span className="px-1.5 py-0.5 bg-teal-50 dark:bg-teal-900/30 rounded text-[9px] text-teal-600 dark:text-teal-300 font-mono">{payroll.diasCitaMedica}d</span></span>
+                            <span className="font-bold text-teal-600 dark:text-teal-400">{formatMoney(payroll.pagoCitaMedica)}</span>
+                        </div>
+                      )}
+
+                      {payroll.pagoPermisoRem > 0 && (
+                        <div className="flex justify-between py-1">
+                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Permiso Remunerado <span className="px-1.5 py-0.5 bg-cyan-50 dark:bg-cyan-900/30 rounded text-[9px] text-cyan-600 dark:text-cyan-300 font-mono">{payroll.diasPermisoRem}d</span></span>
+                            <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatMoney(payroll.pagoPermisoRem)}</span>
+                        </div>
+                      )}
+
+                      {payroll.diasPermisoNoRem > 0 && (
+                        <div className="flex justify-between py-1 opacity-75">
+                            <span className="text-slate-500 dark:text-slate-400 flex items-center gap-2">Permiso No Rem. <span className="px-1.5 py-0.5 bg-orange-50 dark:bg-orange-900/30 rounded text-[9px] text-orange-600 dark:text-orange-300 font-mono">{payroll.diasPermisoNoRem}d</span></span>
+                            <span className="font-bold text-slate-400 dark:text-slate-500">$0</span>
+                        </div>
+                      )}
+
+                      {payroll.diasNoRemun > 0 && (
+                        <div className="flex justify-between py-1 opacity-75">
+                            <span className="text-slate-500 dark:text-slate-400 flex items-center gap-2">Licencia No Rem. <span className="px-1.5 py-0.5 bg-rose-50 dark:bg-rose-900/30 rounded text-[9px] text-rose-600 dark:text-rose-300 font-mono">{payroll.diasNoRemun}d</span></span>
+                            <span className="font-bold text-slate-400 dark:text-slate-500">$0</span>
                         </div>
                       )}
                       
@@ -652,12 +676,25 @@ export default function App() {
                     <p className="text-[10px] font-bold text-slate-500 uppercase mb-3 tracking-wider">Resumen de Días</p>
                     <div className="grid grid-cols-2 gap-3">
                       {Object.entries(counters).map(([key, val]) => {
-                          const tool = Object.values(TOOLS).find(t => t.id === key);
-                          if(!tool || val === 0) return null;
+                          if (val === 0) return null;
+                          
+                          let label = '';
+                          let colorText = '';
+                          
+                          if (key === 'VAC_REST') {
+                              label = 'VAC. (NO HÁBILES)';
+                              colorText = 'text-emerald-400/70';
+                          } else {
+                              const tool = Object.values(TOOLS).find(t => t.id === key);
+                              if (!tool) return null;
+                              label = tool.label;
+                              colorText = tool.text;
+                          }
+
                           return (
                             <div key={key} className="bg-slate-50 dark:bg-[#0B1120] p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-between items-center">
                               <div>
-                                <p className={`text-[10px] font-bold ${tool.text} uppercase`}>{tool.label}</p>
+                                <p className={`text-[10px] font-bold ${colorText} uppercase`}>{label}</p>
                                 <span className="bg-transparent w-full text-xl font-bold text-slate-700 dark:text-white mt-1 block">{val}</span>
                               </div>
                             </div>
