@@ -1,15 +1,15 @@
 import React from 'react';
 import { Icons } from './Icons';
 
-export const BottomNav = ({ activeTab, onTabChange, onMainAction }) => {
+export const BottomNav = ({ activeTab, onTabChange }) => {
   const navItems = [
-    { id: 'home', icon: Icons.Home, label: 'Inicio' },
-    { id: 'overtime', icon: Icons.Clock, label: 'Extras' },
+    { id: 'novedades', icon: Icons.Calendar, label: 'Novedades' },
+    { id: 'deducciones', icon: Icons.TrendingDown, label: 'Deducciones' },
   ];
 
   const secondaryItems = [
-    { id: 'settings', icon: Icons.Settings, label: 'Ajustes' }, // Placeholder for now
-    { id: 'pdf', icon: Icons.Download, label: 'PDF' }, // Placeholder for now
+    { id: 'overtime', icon: Icons.Clock, label: 'Extras' },
+    { id: 'pdf', icon: Icons.Download, label: 'PDF' },
   ];
 
   return (
@@ -29,13 +29,13 @@ export const BottomNav = ({ activeTab, onTabChange, onMainAction }) => {
             ))}
         </div>
 
-        {/* Center Action Button (Floating) */}
+        {/* Center Action Button (Home) */}
         <div className="absolute left-1/2 -top-6 transform -translate-x-1/2">
             <button 
-                onClick={onMainAction}
-                className="w-14 h-14 bg-gradient-to-br from-orange-400 to-rose-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-orange-500/30 hover:scale-105 active:scale-95 transition-transform border-4 border-slate-50 dark:border-[#0B1120]"
+                onClick={() => onTabChange('home')}
+                className={`w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-105 active:scale-95 transition-transform border-4 border-slate-50 dark:border-[#0B1120] ${activeTab === 'home' ? 'bg-gradient-to-br from-cyan-400 to-blue-600 shadow-cyan-500/30' : 'bg-slate-700 dark:bg-slate-800'}`}
             >
-                <Icons.Plus />
+                <Icons.Home />
             </button>
         </div>
 
