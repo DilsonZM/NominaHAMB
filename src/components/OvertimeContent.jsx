@@ -47,9 +47,9 @@ export const OvertimeContent = ({ salary, entries = [], onChange }) => {
 
     const [h1] = start.split(':').map(Number);
     
-    // Determine if start time is Night (21:00 - 06:00)
-    // 21, 22, 23, 0, 1, 2, 3, 4, 5
-    const isNight = h1 >= 21 || h1 < 6;
+    // Determine if start time is Night (19:00 - 06:00) based on 2025 rules
+    // 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5
+    const isNight = h1 >= 19 || h1 < 6;
 
     if (isFestivo) {
         return isNight ? 'HENF' : 'HEDF';

@@ -3,6 +3,6 @@ export const RATES = {
   HEN: { label: 'Extra Nocturna', factor: 1.75, color: 'text-blue-500' },
   RN:  { label: 'Recargo Nocturno', factor: 0.35, color: 'text-indigo-400' },
   DD:  { label: 'Dom/Festivo', factor: 1.75, color: 'text-rose-500' },
-  HEDF:{ label: 'Extra Dom. Diurna', factor: 2.00, color: 'text-orange-600' },
-  HENF:{ label: 'Extra Dom. Nocturna', factor: 2.50, color: 'text-purple-500' },
+  HEDF:{ label: 'Extra Dom. Diurna', factor: 2.05, color: 'text-orange-600' },
+  HENF:{ label: 'Extra Dom. Nocturna', factor: 2.55, color: 'text-purple-500' },
 };
