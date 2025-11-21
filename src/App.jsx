@@ -97,28 +97,36 @@ export default function App() {
     const sDay = parseInt(startDayInput) || 1;
     const eDay = parseInt(endDayInput) || 30;
 
+    // Obtener mes y año de la vista actual del calendario
+    const currentMonth = viewDate.getMonth();
+    const currentYear = viewDate.getFullYear();
+
     const newCounters = { VAC: 0, INC: 0, REM: 0, LNR: 0, MAT: 0, VAC_REST: 0 };
+    
     events.forEach(ev => {
-      // Solo contar si el evento está dentro del rango de contrato
-      const day = parseInt(ev.date.split('-')[2]);
-      if (day >= sDay && day <= eDay) {
-         // Lógica especial para VACACIONES: Solo contar días hábiles (No Domingos, No Festivos)
-         // Asumimos Sábado como hábil.
-         if (ev.type === 'VAC') {
-            const [y, m, d] = ev.date.split('-').map(Number);
-            const dateObj = new Date(y, m - 1, d);
-            if (isBusinessDay(dateObj)) {
-               if (newCounters[ev.type] !== undefined) newCounters[ev.type]++;
-            } else {
-               newCounters.VAC_REST++;
-            }
-         } else {
-            if (newCounters[ev.type] !== undefined) newCounters[ev.type]++;
-         }
+      const [y, m, d] = ev.date.split('-').map(Number);
+      
+      // FILTRO CLAVE: Solo procesar eventos que pertenezcan al mes y año que se está viendo en el calendario
+      if (y === currentYear && (m - 1) === currentMonth) {
+          // Solo contar si el día está dentro del rango de contrato (ej: 1 al 30)
+          if (d >= sDay && d <= eDay) {
+             // Lógica especial para VACACIONES: Solo contar días hábiles (No Domingos, No Festivos)
+             // Asumimos Sábado como hábil.
+             if (ev.type === 'VAC') {
+                const dateObj = new Date(y, m - 1, d);
+                if (isBusinessDay(dateObj)) {
+                   if (newCounters[ev.type] !== undefined) newCounters[ev.type]++;
+                } else {
+                   newCounters.VAC_REST++;
+                }
+             } else {
+                if (newCounters[ev.type] !== undefined) newCounters[ev.type]++;
+             }
+          }
       }
     });
     setCounters(newCounters);
-  }, [events, startDayInput, endDayInput]);
+  }, [events, startDayInput, endDayInput, viewDate]);
 
   // Controlar visibilidad de Novedades: Se mantiene abierto solo si hay eventos marcados
   useEffect(() => {
