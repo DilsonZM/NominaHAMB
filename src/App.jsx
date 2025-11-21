@@ -27,7 +27,7 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setStoredValue];
 }
 
-const APP_VERSION = "v1.3.1";
+const APP_VERSION = "v1.3.2";
 
 export default function App() {
   // --- TEMA ---
@@ -220,7 +220,8 @@ export default function App() {
       safeOtros,
       safePrestamos,
       safeFunebres,
-      diasContrato
+      diasContrato,
+      diasParaAuxilios
     };
   }, [salary, bonus, food, otrosIngresos, prestamos, funebres, counters, startDayInput, endDayInput]);
 
@@ -426,12 +427,12 @@ export default function App() {
                       )}
                       
                       <div className="flex justify-between py-1">
-                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Bono Extralegal <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{Math.round(payroll.bonoReal / (payroll.safeBonus/30 || 1))}d</span></span>
+                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Bono Extralegal <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasParaAuxilios}d</span></span>
                           <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatMoney(payroll.bonoReal)}</span>
                       </div>
 
                       <div className="flex justify-between py-1">
-                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Aux. Alimentación <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{Math.round(payroll.auxAlimReal / (payroll.safeFood/30 || 1))}d</span></span>
+                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Aux. Alimentación <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasParaAuxilios}d</span></span>
                           <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatMoney(payroll.auxAlimReal)}</span>
                       </div>
 
