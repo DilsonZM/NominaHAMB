@@ -397,6 +397,25 @@ export default function App() {
                         </div>
                       </div>
                     </div>
+
+                    {/* BOTÓN HORAS EXTRAS (SOLO DESKTOP) */}
+                    <button 
+                        onClick={() => setShowOvertime(true)}
+                        className="hidden md:flex w-full mt-4 items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-xl hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors group"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="p-1.5 bg-amber-100 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400">
+                                <Icons.Clock />
+                            </div>
+                            <div className="text-left">
+                                <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase block">Horas Extras</span>
+                                <span className="text-[10px] text-amber-600/70 dark:text-amber-400/70 font-medium">Calcular Recargos</span>
+                            </div>
+                        </div>
+                        <div className="text-amber-500 dark:text-amber-400">
+                            <Icons.ChevronRight />
+                        </div>
+                    </button>
                   </div>
 
                 </div>
@@ -839,14 +858,16 @@ export default function App() {
           </p>
         </footer>
 
-        <BottomNav 
-            activeTab={activeTab} 
-            onTabChange={(tab) => {
-                setActiveTab(tab);
-                if (tab === 'overtime') setShowOvertime(true);
-            }}
-            onMainAction={() => setShowCalendar(true)}
-        />
+        <div className="md:hidden">
+          <BottomNav 
+              activeTab={activeTab} 
+              onTabChange={(tab) => {
+                  setActiveTab(tab);
+                  if (tab === 'overtime') setShowOvertime(true);
+              }}
+              onMainAction={() => setShowCalendar(true)}
+          />
+        </div>
 
         <OvertimeCalculator 
             salary={salary}
