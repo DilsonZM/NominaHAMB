@@ -27,7 +27,7 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setStoredValue];
 }
 
-const APP_VERSION = "v1.3.8";
+const APP_VERSION = "v1.3.9";
 
 export default function App() {
   // --- TEMA ---
@@ -234,6 +234,18 @@ export default function App() {
   const getFirstDay = (d) => new Date(d.getFullYear(), d.getMonth(), 1).getDay();
   const handleMonthChange = (delta) => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() + delta)));
   
+  const handleClearMonth = () => {
+    if (window.confirm('¿Estás seguro de borrar todas las novedades de este mes?')) {
+        const currentMonth = viewDate.getMonth();
+        const currentYear = viewDate.getFullYear();
+        setEvents(events.filter(ev => {
+            const [y, m] = ev.date.split('-').map(Number);
+            // Mantener eventos que NO sean del mes/año actual
+            return !(y === currentYear && (m - 1) === currentMonth);
+        }));
+    }
+  };
+
   const handleDayClick = (day) => {
     // Validar Rango
     const sDay = parseInt(startDayInput) || 1;
@@ -605,10 +617,13 @@ export default function App() {
                     </div>
 
                     <div className="bg-slate-50 dark:bg-[#0B1120] rounded-xl p-3 border border-slate-200 dark:border-slate-800">
-                      <div className="flex justify-between items-center mb-4 text-slate-600 dark:text-slate-300">
-                          <button onClick={() => handleMonthChange(-1)} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"><Icons.ChevronLeft /></button>
+                      <div className="relative flex items-center justify-center mb-4 text-slate-600 dark:text-slate-300">
+                          <button onClick={() => handleMonthChange(-1)} className="absolute left-0 p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"><Icons.ChevronLeft /></button>
                           <span className="font-bold text-sm uppercase tracking-widest">{viewDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' })}</span>
-                          <button onClick={() => handleMonthChange(1)} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"><Icons.ChevronRight /></button>
+                          <div className="absolute right-0 flex items-center gap-1">
+                            <button onClick={() => handleMonthChange(1)} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"><Icons.ChevronRight /></button>
+                            <button onClick={handleClearMonth} className="p-1 text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded transition-colors ml-1" title="Limpiar Mes"><Icons.Trash /></button>
+                          </div>
                       </div>
                       <div className="grid grid-cols-7 text-center mb-2">{['D','L','M','M','J','V','S'].map(d => <span key={d} className="text-[10px] font-bold text-slate-400 dark:text-slate-600">{d}</span>)}</div>
                       <div className="grid grid-cols-7 gap-1">
