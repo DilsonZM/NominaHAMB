@@ -10,7 +10,7 @@ function useLocalStorage(key, initialValue) {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
-      console.error(error);
+      console.error("Error reading localStorage key:", key, error);
       return initialValue;
     }
   });
@@ -19,12 +19,14 @@ function useLocalStorage(key, initialValue) {
     try {
       window.localStorage.setItem(key, JSON.stringify(storedValue));
     } catch (error) {
-      console.error(error);
+      console.error("Error writing localStorage key:", key, error);
     }
   }, [key, storedValue]);
 
   return [storedValue, setStoredValue];
 }
+
+const APP_VERSION = "v1.2.0";
 
 export default function App() {
   // --- TEMA ---
@@ -239,6 +241,7 @@ export default function App() {
             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
               {formatMoney(payroll.neto)}
             </h1>
+            <p className="text-[8px] text-slate-300 dark:text-slate-700 mt-1">{APP_VERSION}</p>
           </div>
         </header>
 
