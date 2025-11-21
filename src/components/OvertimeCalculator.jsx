@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Icons } from './Icons';
 import { formatMoney } from '../utils/formatMoney';
 
@@ -25,7 +25,7 @@ export const OvertimeCalculator = ({ salary, isOpen, onClose, onChange }) => {
 
   useEffect(() => {
     onChange(totalOvertime);
-  }, [totalOvertime]);
+  }, [totalOvertime, onChange]);
 
   const handleInput = (key, val) => {
     const num = parseFloat(val) || 0;

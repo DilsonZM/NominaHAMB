@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { formatMoney } from './utils/formatMoney';
 import { Icons } from './components/Icons';
 import { TOOLS } from './constants/tools';

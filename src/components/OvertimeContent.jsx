@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Icons } from './Icons';
 import { formatMoney } from '../utils/formatMoney';
 import { RATES } from '../constants/rates';
@@ -33,7 +33,7 @@ export const OvertimeContent = ({ salary, entries = [], onChange }) => {
     return parseFloat((diff / 60).toFixed(2));
   };
 
-  const getOvertimeType = (dateStr, start, end) => {
+  const getOvertimeType = (dateStr, start) => {
     // Basic Colombian Logic (Simplified for this context)
     // Day: 06:00 - 21:00
     // Night: 21:00 - 06:00

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Icons } from './Icons';
 import { TOOLS } from '../constants/tools';
 import { isHoliday } from '../utils/holidays';

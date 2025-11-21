@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 export const SheetModal = ({ isOpen, onClose, title, icon: Icon, children, color = "text-slate-900 dark:text-white", headerRight = null }) => {
   useEffect(() => {

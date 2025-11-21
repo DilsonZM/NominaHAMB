@@ -1,4 +1,3 @@
-import React from 'react';
 import { formatMoney } from '../utils/formatMoney';
 import { Icons } from './Icons';
 import { PDFDownloadLink } from '@react-pdf/renderer';
@@ -188,7 +187,7 @@ export const SummaryContent = ({
                 fileName={`Nomina_HAMB_${viewDate.getFullYear()}_${viewDate.getMonth() + 1}.pdf`}
                 className="w-full group flex items-center justify-center gap-3 py-3 px-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-500/50 dark:hover:border-cyan-400/50 rounded-xl transition-all duration-300"
                 >
-                {({ blob, url, loading, error }) =>
+                {({ loading }) =>
                     loading ? 'Generando PDF...' : (
                     <>
                         <div className="p-1.5 bg-white dark:bg-slate-700 rounded-lg text-slate-400 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 shadow-sm transition-colors">

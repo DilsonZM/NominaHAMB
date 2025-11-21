@@ -1,5 +1,4 @@
-import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 
 // Registrar fuente (opcional, usaremos Helvetica por defecto que es limpia)
 // Font.register({ family: 'Roboto', src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-light-webfont.ttf' });
