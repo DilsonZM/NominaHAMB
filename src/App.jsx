@@ -27,7 +27,7 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setStoredValue];
 }
 
-const APP_VERSION = "v1.3.2";
+const APP_VERSION = "v1.3.3";
 
 export default function App() {
   // --- TEMA ---
@@ -178,8 +178,8 @@ export default function App() {
     const pagoLeyMaria = diasLeyMaria * valorDia;
 
     // Base para Auxilios (Bono y Alimentación)
-    // Asumimos que se pagan en días trabajados (físico o remoto) y permisos remunerados cortos
-    const diasParaAuxilios = diasTrabajadosFisicos + diasRemoto + diasCitaMedica + diasPermisoRem + diasVacacionesResto;
+    // Se excluye Trabajo Remoto, Citas y Permisos, ya que no se asiste físicamente a la oficina.
+    const diasParaAuxilios = diasTrabajadosFisicos + diasVacacionesResto;
 
     const bonoReal = (safeBonus / 30) * diasParaAuxilios; 
     const auxAlimReal = (safeFood / 30) * diasParaAuxilios;
