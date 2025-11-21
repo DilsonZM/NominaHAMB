@@ -27,7 +27,7 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setStoredValue];
 }
 
-const APP_VERSION = "v1.3.7";
+const APP_VERSION = "v1.3.8";
 
 export default function App() {
   // --- TEMA ---
@@ -419,7 +419,7 @@ export default function App() {
 
                       {payroll.diasNoRemun > 0 && (
                         <div className="flex justify-between py-1 opacity-75">
-                            <span className="text-slate-500 dark:text-slate-400 flex items-center gap-2">Licencia No Rem. <span className="px-1.5 py-0.5 bg-rose-50 dark:bg-rose-900/30 rounded text-[9px] text-rose-600 dark:text-rose-300 font-mono">{payroll.diasNoRemun}d</span></span>
+                            <span className="text-slate-500 dark:text-slate-400 flex items-center gap-2">No Remun. <span className="px-1.5 py-0.5 bg-rose-50 dark:bg-rose-900/30 rounded text-[9px] text-rose-600 dark:text-rose-300 font-mono">{payroll.diasNoRemun}d</span></span>
                             <span className="font-bold text-slate-400 dark:text-slate-500">$0</span>
                         </div>
                       )}
