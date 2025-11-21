@@ -61,10 +61,19 @@ export default function App() {
   // Navigation State
   const [activeTab, setActiveTab] = useState('home');
   
-  // Overtime State (Persisted as object now)
-  const [overtimeHours, setOvertimeHours] = useLocalStorage('hamb_overtimeHours', {
-    HED: 0, HEN: 0, RN: 0, DD: 0, HEDF: 0, HENF: 0
-  });
+  // Overtime State (Event based now)
+  const [overtimeEntries, setOvertimeEntries] = useLocalStorage('hamb_overtimeEntries', []);
+
+  // Derived Overtime Hours for calculations
+  const overtimeHours = useMemo(() => {
+    const totals = { HED: 0, HEN: 0, RN: 0, DD: 0, HEDF: 0, HENF: 0 };
+    overtimeEntries.forEach(entry => {
+      if (totals[entry.type] !== undefined) {
+        totals[entry.type] += (parseFloat(entry.hours) || 0);
+      }
+    });
+    return totals;
+  }, [overtimeEntries]);
 
   const [otrosIngresos, setOtrosIngresos] = useLocalStorage('hamb_otrosIngresos', 0); 
   const [prestamos, setPrestamos] = useLocalStorage('hamb_prestamos', 0); 
@@ -516,8 +525,8 @@ export default function App() {
         >
             <OvertimeContent 
                 salary={salary}
-                hours={overtimeHours}
-                onChange={setOvertimeHours}
+                entries={overtimeEntries}
+                onChange={setOvertimeEntries}
             />
         </SheetModal>
 
