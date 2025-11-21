@@ -3,6 +3,8 @@ import { formatMoney } from './utils/formatMoney';
 import { Icons } from './components/Icons';
 import { TOOLS } from './constants/tools';
 import { isHoliday, isBusinessDay } from './utils/holidays';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { PayrollPDF } from './components/PayrollPDF';
 
 // Hook personalizado para persistencia en localStorage
 function useLocalStorage(key, initialValue) {
@@ -27,7 +29,7 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setStoredValue];
 }
 
-const APP_VERSION = "v1.3.10";
+const APP_VERSION = "v1.3.11";
 
 export default function App() {
   // --- TEMA ---
@@ -530,6 +532,26 @@ export default function App() {
                           <span className="text-rose-500 dark:text-rose-400 font-bold text-xs uppercase">Total Deducciones</span>
                           <span className="font-black text-rose-600 dark:text-rose-400 text-lg">- {formatMoney(payroll.deducciones)}</span>
                       </div>
+                    </div>
+
+                    {/* PDF DOWNLOAD BUTTON */}
+                    <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                      <PDFDownloadLink
+                        document={<PayrollPDF payroll={payroll} period={{ start: startDayInput, end: endDayInput }} />}
+                        fileName={`Nomina_HAMB_${viewDate.getFullYear()}_${viewDate.getMonth() + 1}.pdf`}
+                        className="w-full group flex items-center justify-center gap-3 py-3 px-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-500/50 dark:hover:border-cyan-400/50 rounded-xl transition-all duration-300"
+                      >
+                        {({ blob, url, loading, error }) =>
+                          loading ? 'Generando PDF...' : (
+                            <>
+                              <div className="p-1.5 bg-white dark:bg-slate-700 rounded-lg text-slate-400 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 shadow-sm transition-colors">
+                                <Icons.Download className="w-4 h-4" />
+                              </div>
+                              <span className="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white uppercase tracking-wider transition-colors">Descargar Comprobante</span>
+                            </>
+                          )
+                        }
+                      </PDFDownloadLink>
                     </div>
                 </div>
               </section>
