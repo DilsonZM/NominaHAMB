@@ -27,7 +27,7 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setStoredValue];
 }
 
-const APP_VERSION = "v1.3.0";
+const APP_VERSION = "v1.3.1";
 
 export default function App() {
   // --- TEMA ---
@@ -61,7 +61,7 @@ export default function App() {
   const [startDayInput, setStartDayInput] = useLocalStorage('hamb_startDayInput', '1');
   const [endDayInput, setEndDayInput] = useLocalStorage('hamb_endDayInput', '30');
 
-  const [currentTool, setCurrentTool] = useState('VACACIONES');
+  const [currentTool, setCurrentTool] = useState('REMOTO');
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [viewDate, setViewDate] = useState(new Date(2025, 10, 1));
   
