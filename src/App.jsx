@@ -27,7 +27,7 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setStoredValue];
 }
 
-const APP_VERSION = "v1.3.9";
+const APP_VERSION = "v1.3.10";
 
 export default function App() {
   // --- TEMA ---
@@ -133,6 +133,15 @@ export default function App() {
   useEffect(() => {
     setShowCalendar(events.length > 0);
   }, [events]);
+
+  const hasEventsInCurrentMonth = useMemo(() => {
+    const currentMonth = viewDate.getMonth();
+    const currentYear = viewDate.getFullYear();
+    return events.some(ev => {
+      const [y, m] = ev.date.split('-').map(Number);
+      return y === currentYear && (m - 1) === currentMonth;
+    });
+  }, [events, viewDate]);
 
   const payroll = useMemo(() => {
     // Convertimos inputs a números seguros para la matemática (0 si están vacíos)
@@ -622,7 +631,9 @@ export default function App() {
                           <span className="font-bold text-sm uppercase tracking-widest">{viewDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' })}</span>
                           <div className="absolute right-0 flex items-center gap-1">
                             <button onClick={() => handleMonthChange(1)} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"><Icons.ChevronRight /></button>
-                            <button onClick={handleClearMonth} className="p-1 text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded transition-colors ml-1" title="Limpiar Mes"><Icons.Trash /></button>
+                            {hasEventsInCurrentMonth && (
+                                <button onClick={handleClearMonth} className="p-1 text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded transition-colors ml-1" title="Limpiar Mes"><Icons.Trash /></button>
+                            )}
                           </div>
                       </div>
                       <div className="grid grid-cols-7 text-center mb-2">{['D','L','M','M','J','V','S'].map(d => <span key={d} className="text-[10px] font-bold text-slate-400 dark:text-slate-600">{d}</span>)}</div>
