@@ -229,7 +229,6 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-3">
-               <span className="hidden md:block text-[10px] font-mono text-slate-400 opacity-50">{APP_VERSION}</span>
                <button 
                   onClick={() => setIsDark(!isDark)}
                   className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
@@ -244,7 +243,6 @@ export default function App() {
             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
               {formatMoney(payroll.neto)}
             </h1>
-            <p className="text-[8px] text-slate-300 dark:text-slate-700 mt-1">{APP_VERSION}</p>
           </div>
         </header>
 
@@ -591,6 +589,16 @@ export default function App() {
 
           </div>
         </main>
+
+        {/* FOOTER */}
+        <footer className="text-center py-6 border-t border-slate-200 dark:border-white/5 mt-auto">
+          <p className="text-[10px] text-slate-400 dark:text-slate-600 uppercase tracking-widest font-bold">
+            Desarrollado por <span className="text-slate-600 dark:text-slate-400">DilsonZM</span>
+          </p>
+          <p className="text-[9px] text-slate-300 dark:text-slate-700 font-mono mt-1 opacity-50">
+            {APP_VERSION}
+          </p>
+        </footer>
       </div>
     </div>
   );
