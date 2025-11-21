@@ -522,6 +522,11 @@ export default function App() {
             title="Horas Extras"
             icon={Icons.Clock}
             color="text-amber-500 dark:text-amber-400"
+            headerRight={
+              <span className="text-lg font-black text-amber-500 dark:text-amber-400">
+                {formatMoney(payroll.safeOvertime)}
+              </span>
+            }
         >
             <OvertimeContent 
                 salary={salary}

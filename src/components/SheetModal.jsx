@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-export const SheetModal = ({ isOpen, onClose, title, icon: Icon, children, color = "text-slate-900 dark:text-white" }) => {
+export const SheetModal = ({ isOpen, onClose, title, icon: Icon, children, color = "text-slate-900 dark:text-white", headerRight = null }) => {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -31,10 +31,17 @@ export const SheetModal = ({ isOpen, onClose, title, icon: Icon, children, color
                         <Icon />
                     </div>
                 )}
-                <div>
+                <div className="flex-1">
                     <h2 className={`text-xl font-bold ${color}`}>{title}</h2>
                 </div>
-                <button onClick={onClose} className="ml-auto p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                
+                {headerRight && (
+                  <div className="mr-2">
+                    {headerRight}
+                  </div>
+                )}
+
+                <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
