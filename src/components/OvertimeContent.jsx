@@ -7,6 +7,7 @@ import { isHoliday } from '../utils/holidays';
 export const OvertimeContent = ({ salary, entries = [], onChange }) => {
   const [viewDate, setViewDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isTypeSelectorOpen, setIsTypeSelectorOpen] = useState(false);
   
   const [form, setForm] = useState({
     type: 'HED',
@@ -19,6 +20,7 @@ export const OvertimeContent = ({ salary, entries = [], onChange }) => {
   // --- CALENDAR HELPERS ---
   const getDaysInMonth = (d) => new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
   const getFirstDay = (d) => new Date(d.getFullYear(), d.getMonth(), 1).getDay();
+  const getBgColor = (textClass) => textClass ? textClass.replace('text-', 'bg-') : 'bg-slate-400';
   
   const handleMonthChange = (delta) => {
     setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() + delta)));
@@ -84,6 +86,45 @@ export const OvertimeContent = ({ salary, entries = [], onChange }) => {
             <p className="text-xl font-black text-amber-500">{formatMoney(totalOvertimeValue)}</p>
         </div>
 
+        {/* TYPE SELECTOR (NEW) */}
+        <div className="relative z-20">
+             <button 
+                onClick={() => setIsTypeSelectorOpen(!isTypeSelectorOpen)}
+                className="w-full flex items-center justify-between p-3 bg-white dark:bg-[#161E2E] border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:border-amber-500/50 transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${getBgColor(RATES[form.type]?.color)} shadow-sm ring-2 ring-white dark:ring-[#0B1120]`}></div>
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-200 tracking-wide">{RATES[form.type]?.label}</span>
+                </div>
+                <div className={`text-slate-400 transition-transform duration-300 ${isTypeSelectorOpen ? 'rotate-180' : ''}`}>
+                  <Icons.ChevronDown />
+                </div>
+              </button>
+
+              {isTypeSelectorOpen && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#161E2E] border border-slate-100 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden p-1 animate-in fade-in zoom-in-95 duration-200 z-30">
+                  <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                    {Object.entries(RATES).map(([key, config]) => (
+                      <button
+                        key={key}
+                        onClick={() => {
+                          setForm({ ...form, type: key });
+                          setIsTypeSelectorOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-colors ${form.type === key ? 'bg-amber-50 dark:bg-amber-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                      >
+                        <div className={`w-2 h-2 rounded-full ${getBgColor(config.color)}`}></div>
+                        <span className={`text-xs font-bold uppercase tracking-wide ${form.type === key ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                          {config.label}
+                        </span>
+                        {form.type === key && <span className="ml-auto text-amber-500"><Icons.Check /></span>} 
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+        </div>
+
         {/* CALENDAR */}
         <div className="bg-slate-50 dark:bg-[#0B1120] rounded-xl p-3 border border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-4 px-2">
@@ -141,31 +182,11 @@ export const OvertimeContent = ({ salary, entries = [], onChange }) => {
         {/* FORMULARIO */}
         <div className="bg-white dark:bg-[#161E2E] rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm">
             <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                Agregar Extra: {selectedDate}
+                <span className={`w-1.5 h-1.5 rounded-full ${getBgColor(RATES[form.type]?.color)}`}></span>
+                Agregar {RATES[form.type]?.label}: {selectedDate}
             </h3>
             
             <div className="space-y-3">
-                <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Tipo de Hora</label>
-                    <div className="grid grid-cols-2 gap-2">
-                        {Object.entries(RATES).map(([key, config]) => (
-                            <button
-                                key={key}
-                                onClick={() => setForm({ ...form, type: key })}
-                                className={`
-                                    p-2 rounded-lg text-xs font-bold border transition-all text-left
-                                    ${form.type === key 
-                                        ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20' 
-                                        : 'bg-slate-50 dark:bg-[#0B1120] border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}
-                                `}
-                            >
-                                {config.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
                 <div className="grid grid-cols-2 gap-3">
                     <div>
                         <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Inicio</label>
