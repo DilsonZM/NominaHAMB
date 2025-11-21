@@ -27,7 +27,7 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setStoredValue];
 }
 
-const APP_VERSION = "v1.3.3";
+const APP_VERSION = "v1.3.4";
 
 export default function App() {
   // --- TEMA ---
@@ -620,7 +620,18 @@ export default function App() {
                                 `}
                               >
                                 {day}
-                                {isHol && !tool && !isInactive && <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>}
+                                {/* Festivo: Punto rojo siempre visible (con borde blanco si hay tool para contraste) */}
+                                {isHol && !isInactive && (
+                                  <span className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-rose-500 ${tool ? 'ring-1 ring-white dark:ring-slate-900' : ''}`}></span>
+                                )}
+
+                                {/* Indicadores de Fin de Semana cuando hay Novedad (Puntos abajo) */}
+                                {tool && !isInactive && (
+                                  <>
+                                    {isSat && <span className="absolute bottom-1 w-1 h-1 rounded-full bg-blue-200/80"></span>}
+                                    {isSun && <span className="absolute bottom-1 w-1 h-1 rounded-full bg-rose-200/80"></span>}
+                                  </>
+                                )}
                               </button>
                             )
                           })}
