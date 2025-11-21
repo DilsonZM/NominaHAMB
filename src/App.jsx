@@ -97,7 +97,7 @@ export default function App() {
     const sDay = parseInt(startDayInput) || 1;
     const eDay = parseInt(endDayInput) || 30;
 
-    const newCounters = { VAC: 0, INC: 0, REM: 0, LNR: 0, MAT: 0 };
+    const newCounters = { VAC: 0, INC: 0, REM: 0, LNR: 0, MAT: 0, VAC_REST: 0 };
     events.forEach(ev => {
       // Solo contar si el evento está dentro del rango de contrato
       const day = parseInt(ev.date.split('-')[2]);
@@ -109,6 +109,8 @@ export default function App() {
             const dateObj = new Date(y, m - 1, d);
             if (isBusinessDay(dateObj)) {
                if (newCounters[ev.type] !== undefined) newCounters[ev.type]++;
+            } else {
+               newCounters.VAC_REST++;
             }
          } else {
             if (newCounters[ev.type] !== undefined) newCounters[ev.type]++;
@@ -140,28 +142,32 @@ export default function App() {
     const diasContrato = Math.max(0, (safeEnd - safeStart) + 1);
 
     const diasVacaciones = counters.VAC;
+    const diasVacacionesResto = counters.VAC_REST || 0;
     const diasIncapacidad = counters.INC;
     const diasNoRemun = counters.LNR;
     const diasLicRemun = counters.REM;
     const diasLeyMaria = counters.MAT;
 
     // Días Físicos
-    const diasTrabajadosFisicos = Math.max(0, diasContrato - diasVacaciones - diasIncapacidad - diasNoRemun - diasLicRemun - diasLeyMaria);
+    // Restamos también los días de vacaciones no hábiles para que no se paguen como salario básico,
+    // sino que los mostraremos en una línea separada (aunque el valor es el mismo).
+    const diasTrabajadosFisicos = Math.max(0, diasContrato - diasVacaciones - diasVacacionesResto - diasIncapacidad - diasNoRemun - diasLicRemun - diasLeyMaria);
 
     // Pagos
     const pagoBasico = diasTrabajadosFisicos * valorDia;
     const pagoVacaciones = diasVacaciones * valorDia; 
+    const pagoVacacionesResto = diasVacacionesResto * valorDia;
     const pagoIncapacidad = diasIncapacidad * valorDia; 
     const pagoLicRemun = diasLicRemun * valorDia;
     const pagoLeyMaria = diasLeyMaria * valorDia;
 
-    const bonoReal = (safeBonus / 30) * diasTrabajadosFisicos;
-    const auxAlimReal = (safeFood / 30) * diasTrabajadosFisicos;
+    const bonoReal = (safeBonus / 30) * (diasTrabajadosFisicos + diasVacacionesResto); // El bono suele pagarse completo si son vacaciones
+    const auxAlimReal = (safeFood / 30) * (diasTrabajadosFisicos + diasVacacionesResto);
     
-    const totalDevengado = pagoBasico + pagoVacaciones + pagoIncapacidad + pagoLicRemun + pagoLeyMaria + bonoReal + auxAlimReal + safeOtros;
+    const totalDevengado = pagoBasico + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria + bonoReal + auxAlimReal + safeOtros;
 
     // Deducciones
-    const ibc = pagoBasico + pagoVacaciones + pagoIncapacidad + pagoLicRemun + pagoLeyMaria; 
+    const ibc = pagoBasico + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria; 
     const salud = ibc * 0.04;
     const pension = ibc * 0.04;
     
@@ -175,12 +181,14 @@ export default function App() {
       pension,
       pagoBasico,
       pagoVacaciones,
+      pagoVacacionesResto,
       pagoIncapacidad,
       pagoLeyMaria,
       bonoReal,
       auxAlimReal,
       diasTrabajadosFisicos,
       diasVacaciones,
+      diasVacacionesResto,
       diasIncapacidad,
       diasLeyMaria,
       safeOtros,
@@ -206,8 +214,16 @@ export default function App() {
       // Simplemente eliminamos el evento. El renderizado se encargará de mostrar el color por defecto.
       setEvents(events.filter(e => e.date !== dateStr));
     } else {
-      const filtered = events.filter(e => e.date !== dateStr);
-      setEvents([...filtered, { date: dateStr, type: TOOLS[currentTool].id }]);
+      const existingEvent = events.find(e => e.date === dateStr);
+      
+      if (existingEvent && existingEvent.type === TOOLS[currentTool].id) {
+        // Si ya existe y es del mismo tipo, lo borramos (toggle)
+        setEvents(events.filter(e => e.date !== dateStr));
+      } else {
+        // Si no existe o es de otro tipo, lo agregamos/reemplazamos
+        const filtered = events.filter(e => e.date !== dateStr);
+        setEvents([...filtered, { date: dateStr, type: TOOLS[currentTool].id }]);
+      }
     }
   };
 
@@ -348,6 +364,13 @@ export default function App() {
                         </div>
                       )}
 
+                      {payroll.pagoVacacionesResto > 0 && (
+                        <div className="flex justify-between py-1">
+                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Vacaciones (No Hábiles) <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasVacacionesResto}d</span></span>
+                            <span className="font-bold text-slate-800 dark:text-white">{formatMoney(payroll.pagoVacacionesResto)}</span>
+                        </div>
+                      )}
+
                       {payroll.pagoLeyMaria > 0 && (
                         <div className="flex justify-between py-1">
                             <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Ley María <span className="px-1.5 py-0.5 bg-pink-100 dark:bg-pink-900/50 rounded text-[9px] text-pink-600 dark:text-pink-300 font-mono">{payroll.diasLeyMaria}d</span></span>
@@ -363,12 +386,12 @@ export default function App() {
                       )}
                       
                       <div className="flex justify-between py-1">
-                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Bono Extralegal <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasTrabajadosFisicos}d</span></span>
+                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Bono Extralegal <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasTrabajadosFisicos + payroll.diasVacacionesResto}d</span></span>
                           <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatMoney(payroll.bonoReal)}</span>
                       </div>
 
                       <div className="flex justify-between py-1">
-                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Aux. Alimentación <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasTrabajadosFisicos}d</span></span>
+                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Aux. Alimentación <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasTrabajadosFisicos + payroll.diasVacacionesResto}d</span></span>
                           <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatMoney(payroll.auxAlimReal)}</span>
                       </div>
 
