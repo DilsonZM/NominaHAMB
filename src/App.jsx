@@ -6,6 +6,18 @@ import { TOOLS } from './constants/tools';
 export default function App() {
   // --- TEMA ---
   const [isDark, setIsDark] = useState(true);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // --- ESTADOS DE DATOS ---
   // Usamos cadenas vacías '' o números para los inputs para evitar el "0" pegajoso
@@ -169,7 +181,7 @@ export default function App() {
       <div className="min-h-screen bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-slate-200 font-sans transition-colors duration-500 pb-20">
         
         {/* HEADER */}
-        <header className="sticky top-0 z-50 bg-white/80 dark:bg-[#0B1120]/90 backdrop-blur-md border-b border-slate-200 dark:border-white/5 px-4 py-2 shadow-sm dark:shadow-2xl transition-all duration-300">
+        <header className="sticky top-0 z-50 bg-white/80 dark:bg-[#0B1120]/90 backdrop-blur-md border-b border-slate-200 dark:border-white/5 px-4 py-2 shadow-sm dark:shadow-2xl transition-all duration-300 relative">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-cyan-50 dark:bg-cyan-500/10 flex items-center justify-center text-cyan-600 dark:text-cyan-400 border border-cyan-100 dark:border-cyan-500/20 shadow-sm">
@@ -180,11 +192,16 @@ export default function App() {
                   <span className="text-slate-900 dark:text-white">Nómina HAMB</span> <span className="bg-gradient-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text">Inteligente</span>
                 </h1>
               </div>
+              <div className="md:hidden">
+                 <h1 className="text-xl font-black tracking-tight">
+                  <span className="bg-gradient-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text">HAMB</span>
+                </h1>
+              </div>
             </div>
 
-            <div className="px-3 py-1 rounded-full bg-slate-100 dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 flex items-center gap-2">
-               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></div>
-               <span className="text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">En Línea</span>
+            <div className="absolute left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full bg-slate-100 dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 flex items-center gap-2">
+               <div className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-500 dark:bg-emerald-400 animate-pulse' : 'bg-rose-500 dark:bg-rose-400'} `}></div>
+               <span className="text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">{isOnline ? 'En Línea' : 'Offline'}</span>
             </div>
 
             <button 
