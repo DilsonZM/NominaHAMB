@@ -52,8 +52,8 @@ export default function App() {
   const [salary, setSalary] = useLocalStorage('hamb_salary', 1800000);
   const [bonus, setBonus] = useLocalStorage('hamb_bonus', 4550000);
   const [food, setFood] = useLocalStorage('hamb_food', 452000);
-  const [showCalendar, setShowCalendar] = useState(false); 
-  const [showDeductions, setShowDeductions] = useState(false); 
+  const [showCalendar, setShowCalendar] = useLocalStorage('hamb_showCalendar', false); 
+  const [showDeductions, setShowDeductions] = useLocalStorage('hamb_showDeductions', false); 
 
   const [otrosIngresos, setOtrosIngresos] = useLocalStorage('hamb_otrosIngresos', 0); 
   const [prestamos, setPrestamos] = useLocalStorage('hamb_prestamos', 0); 
@@ -63,7 +63,7 @@ export default function App() {
   const [startDayInput, setStartDayInput] = useLocalStorage('hamb_startDayInput', '1');
   const [endDayInput, setEndDayInput] = useLocalStorage('hamb_endDayInput', '30');
 
-  const [currentTool, setCurrentTool] = useState('REMOTO');
+  const [currentTool, setCurrentTool] = useLocalStorage('hamb_currentTool', 'REMOTO');
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [viewDate, setViewDate] = useState(new Date(2025, 10, 1));
   
@@ -132,9 +132,8 @@ export default function App() {
   }, [events, startDayInput, endDayInput, viewDate]);
 
   // Controlar visibilidad de Novedades: Se mantiene abierto solo si hay eventos marcados
-  useEffect(() => {
-    setShowCalendar(events.length > 0);
-  }, [events]);
+  // ELIMINADO: useEffect(() => { setShowCalendar(events.length > 0); }, [events]);
+  // Ahora el usuario controla manualmente si quiere ver el calendario o no, y se guarda en localStorage.
 
   const hasEventsInCurrentMonth = useMemo(() => {
     const currentMonth = viewDate.getMonth();
@@ -191,10 +190,12 @@ export default function App() {
 
     // Base para Auxilios (Bono y Alimentación)
     // Se excluye Trabajo Remoto, Citas y Permisos, ya que no se asiste físicamente a la oficina.
-    const diasParaAuxilios = diasTrabajadosFisicos + diasVacacionesResto;
+    // CAMBIO: Trabajo Remoto SÍ paga Bono Extralegal, pero NO paga Auxilio de Alimentación.
+    const diasParaAlimentacion = diasTrabajadosFisicos + diasVacacionesResto;
+    const diasParaBono = diasTrabajadosFisicos + diasVacacionesResto + diasRemoto;
 
-    const bonoReal = (safeBonus / 30) * diasParaAuxilios; 
-    const auxAlimReal = (safeFood / 30) * diasParaAuxilios;
+    const bonoReal = (safeBonus / 30) * diasParaBono; 
+    const auxAlimReal = (safeFood / 30) * diasParaAlimentacion;
     
     const totalDevengado = pagoBasico + pagoRemoto + pagoCitaMedica + pagoPermisoRem + pagoVacaciones + pagoVacacionesResto + pagoIncapacidad + pagoLicRemun + pagoLeyMaria + bonoReal + auxAlimReal + safeOtros;
 
@@ -237,7 +238,8 @@ export default function App() {
       safePrestamos,
       safeFunebres,
       diasContrato,
-      diasParaAuxilios
+      diasParaAlimentacion,
+      diasParaBono
     };
   }, [salary, bonus, food, otrosIngresos, prestamos, funebres, counters, startDayInput, endDayInput]);
 
@@ -483,12 +485,12 @@ export default function App() {
                       )}
                       
                       <div className="flex justify-between py-1">
-                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Bono Extralegal <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasParaAuxilios}d</span></span>
+                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Bono Extralegal <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasParaBono}d</span></span>
                           <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatMoney(payroll.bonoReal)}</span>
                       </div>
 
                       <div className="flex justify-between py-1">
-                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Aux. Alimentación <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasParaAuxilios}d</span></span>
+                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Aux. Alimentación <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] text-slate-500 dark:text-slate-300 font-mono">{payroll.diasParaAlimentacion}d</span></span>
                           <span className="font-bold text-cyan-600 dark:text-cyan-400">{formatMoney(payroll.auxAlimReal)}</span>
                       </div>
 

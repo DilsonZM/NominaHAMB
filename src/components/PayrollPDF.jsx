@@ -199,12 +199,12 @@ export const PayrollPDF = ({ payroll, period }) => (
             )}
 
             <View style={styles.row}>
-                <Text style={styles.colLabel}>Bono Extralegal ({payroll.diasParaAuxilios}d)</Text>
+                <Text style={styles.colLabel}>Bono Extralegal ({payroll.diasParaBono}d)</Text>
                 <Text style={styles.colValue}>{formatCurrency(payroll.bonoReal)}</Text>
             </View>
 
             <View style={styles.row}>
-                <Text style={styles.colLabel}>Aux. Alimentación ({payroll.diasParaAuxilios}d)</Text>
+                <Text style={styles.colLabel}>Aux. Alimentación ({payroll.diasParaAlimentacion}d)</Text>
                 <Text style={styles.colValue}>{formatCurrency(payroll.auxAlimReal)}</Text>
             </View>
 
