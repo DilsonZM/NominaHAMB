@@ -35,7 +35,7 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setStoredValue];
 }
 
-const APP_VERSION = "v1.5.0";
+const APP_VERSION = "2.0";
 
 export default function App() {
   // --- TEMA ---
