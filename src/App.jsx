@@ -27,7 +27,7 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setStoredValue];
 }
 
-const APP_VERSION = "v1.3.4";
+const APP_VERSION = "v1.3.5";
 
 export default function App() {
   // --- TEMA ---
@@ -205,6 +205,7 @@ export default function App() {
       pagoVacaciones,
       pagoVacacionesResto,
       pagoIncapacidad,
+      pagoLicRemun,
       pagoLeyMaria,
       bonoReal,
       auxAlimReal,
@@ -216,6 +217,7 @@ export default function App() {
       diasVacaciones,
       diasVacacionesResto,
       diasIncapacidad,
+      diasLicRemun,
       diasLeyMaria,
       safeOtros,
       safePrestamos,
@@ -416,6 +418,13 @@ export default function App() {
                         <div className="flex justify-between py-1">
                             <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Ley María <span className="px-1.5 py-0.5 bg-pink-100 dark:bg-pink-900/50 rounded text-[9px] text-pink-600 dark:text-pink-300 font-mono">{payroll.diasLeyMaria}d</span></span>
                             <span className="font-bold text-pink-500 dark:text-pink-400">{formatMoney(payroll.pagoLeyMaria)}</span>
+                        </div>
+                      )}
+
+                      {payroll.pagoLicRemun > 0 && (
+                        <div className="flex justify-between py-1">
+                            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-2">Licencia Remunerada <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/50 rounded text-[9px] text-blue-600 dark:text-blue-300 font-mono">{payroll.diasLicRemun}d</span></span>
+                            <span className="font-bold text-blue-500 dark:text-blue-400">{formatMoney(payroll.pagoLicRemun)}</span>
                         </div>
                       )}
 
